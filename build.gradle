@@ -42,6 +42,7 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'me.paulschwarz:spring-dotenv:4.0.0'
 }
 
 tasks.named('test') {
