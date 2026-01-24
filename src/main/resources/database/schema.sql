@@ -7,7 +7,7 @@ CREATE TABLE users (
                        age INT CHECK (age > 18 AND age < 60),
                        phone VARCHAR(20) NOT NULL,
                        address VARCHAR(255),
-                       role ENUM('customers', 'staff','admin','suppliers','users') NOT NULL DEFAULT 'khach',
+                       role ENUM('customers', 'staff','admin','suppliers','users') NOT NULL DEFAULT 'customers',
                        status ENUM('block', 'active', 'banned') NOT NULL DEFAULT 'active',
 
     -- Validate SĐT: chỉ số, 9–15 ký tự

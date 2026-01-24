@@ -64,6 +64,9 @@ public class UserEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @Column
+    private Double salary;
+
 
     @PrePersist
     protected void onCreate() {
