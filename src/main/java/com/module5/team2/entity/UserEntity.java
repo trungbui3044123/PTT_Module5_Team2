@@ -33,19 +33,19 @@ public class UserEntity {
     private Integer id;
     @Column(nullable = false, unique = true, length = 100)
     private String username;
-    
+
     @Column(nullable = false, length = 255)
     @JsonIgnore
     private String password;
-    
+
     @Column(nullable = false, unique = true, length = 150)
     private String email;
-    
+
     @Column(length = 150)
     private String name;
-   
+
     private Integer age;
-   
+
     @Column(nullable = false, length = 20)
     private String phone;
     @Column(length = 255)
@@ -64,12 +64,15 @@ public class UserEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    
+    @Column
+    private Double salary;
+
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        if (status == null) {            
+        if (status == null) {
             status = Status.active;
         }
     }

@@ -1,11 +1,14 @@
 package com.module5.team2.repository;
 
-import java.util.Locale.Category;
-
+import com.module5.team2.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
-@Repository
-public interface UserRepository extends JpaRepository<Category, Long>{
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<UserEntity, Integer> {
+
+    Optional<UserEntity> findByUsername(String username);
+
+    Optional<UserEntity> findByEmail(String email);
 
 }
