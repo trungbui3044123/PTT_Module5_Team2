@@ -5,9 +5,10 @@ import lombok.Data;
 @Data
 public class CreateStaffRequest {
     private String username;
-    private String password;
     private String email;
     private String phone;
+    private Integer age;
     private String name;
+    private String address;
     private Double salary;
 }
