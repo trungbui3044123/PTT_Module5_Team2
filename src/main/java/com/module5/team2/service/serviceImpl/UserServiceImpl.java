@@ -4,19 +4,13 @@ import com.module5.team2.dto.request.UpdateUserRequest;
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.repository.UserRepository;
 import com.module5.team2.service.service.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.module5.team2.dto.request.CreateStaffRequest;
 import com.module5.team2.dto.request.RegisterRequest;
-import com.module5.team2.entity.UserEntity;
-import com.module5.team2.repository.UserRepository;
-import com.module5.team2.service.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.List;
 
@@ -26,6 +20,8 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private static final String DEFAULT_STAFF_PASSWORD = "123456@Abc";
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * UPDATE USER
@@ -64,10 +60,7 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(userId);
     }
 
-    private static final String DEFAULT_STAFF_PASSWORD = "123456@Abc";
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
 
     /**
