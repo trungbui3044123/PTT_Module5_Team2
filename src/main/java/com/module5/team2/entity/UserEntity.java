@@ -82,7 +82,11 @@ public class UserEntity {
         updatedAt = LocalDateTime.now();
     }
     public enum Role {
-        customers, staff, admin, suppliers, users
+        CUSTOMERS,
+        STAFF,
+        ADMIN,
+        SUPPLIERS,
+        USER,
     }
 
     public enum Status {
