@@ -9,6 +9,7 @@ import com.module5.team2.dto.response.UserProfileResponse;
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.security.jwt.CustomUserDetails;
 import com.module5.team2.security.jwt.JwtTokenProvider;
+import com.module5.team2.service.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +17,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import com.module5.team2.service.UserService;
 
 @RestController
 @RequestMapping("/api")
@@ -98,6 +98,29 @@ public class UserController {
         userService.resetStaffPassword(id);
 
         return ResponseEntity.ok("Reset mật khẩu về mặc định thành công");
+    }
+
+    @GetMapping("/admin/users")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> searchUsers (
+            @RequestParam(required = false) String keyword) {
+
+        return ResponseEntity.ok(
+                userService.searchUsers(keyword)
+                        .stream()
+                        .map(user -> UserProfileResponse.builder()
+                                .id(user.getId())
+                                .username(user.getUsername())
+                                .email(user.getEmail())
+                                .phone(user.getPhone())
+                                .name(user.getName())
+                                .role(user.getRole().name())
+                                .status(user.getStatus().name())
+                                .salary(user.getSalary())
+                                .build()
+                        )
+                        .toList()
+        );
     }
 
     /**
