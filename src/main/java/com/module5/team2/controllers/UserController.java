@@ -49,6 +49,7 @@ public class UserController {
     /**
      * Login dùng chung cho TẤT CẢ role
      */
+    @PostMapping("/public/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
