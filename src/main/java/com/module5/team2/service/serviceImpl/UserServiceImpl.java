@@ -5,6 +5,8 @@ import com.module5.team2.entity.UserEntity;
 import com.module5.team2.repository.UserRepository;
 import com.module5.team2.service.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.module5.team2.dto.request.CreateStaffRequest;
@@ -113,7 +115,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (request.getSalary() == null ||
-                request.getSalary() <= 0 ||
+                request.getSalary() <= 0.0 ||
                 request.getSalary() >= 100000000) {
             throw new RuntimeException("Lương không hợp lệ");
         }
@@ -157,18 +159,49 @@ public class UserServiceImpl implements UserService {
                         new RuntimeException("Không tìm thấy user"));
     }
 
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<UserEntity> searchUsers(String keyword) {
+//        if (keyword == null || keyword.trim().isEmpty()) {
+//            // nếu không nhập gì => trả về tất cả
+//            return userRepository.findAll();
+//        }
+//
+//        return userRepository
+//                .findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
+//                        keyword,
+//                        keyword
+//                );
+//    }
+
+
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> searchUsers(String keyword) {
+    public Page<UserEntity> searchUsers(String keyword, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            // nếu không nhập gì => trả về tất cả
-            return userRepository.findAll();
+            return userRepository.findAll(pageable);
         }
 
-        return userRepository
-                .findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
-                        keyword,
-                        keyword
-                );
+        return userRepository.findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
+                keyword, keyword, pageable
+        );
+    }
+
+    //Seed Post tạo dữ liệu admin mẫu
+    @jakarta.annotation.PostConstruct
+    public void initAdmin() {
+        if (userRepository.findByUsername("admin").isEmpty()) {
+            UserEntity admin = UserEntity.builder()
+                    .username("admin")
+                    .password(passwordEncoder.encode("admin123")) // Mật khẩu để login Postman
+                    .email("admin@gmail.com")
+                    .phone("0999999999")
+                    .name("System Admin")
+                    .role(UserEntity.Role.ADMIN)
+                    .status(UserEntity.Status.active)
+                    .build();
+            userRepository.save(admin);
+            System.out.println(">>> Đã khởi tạo tài khoản Admin mặc định: admin/admin123");
+        }
     }
 }
