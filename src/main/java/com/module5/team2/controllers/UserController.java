@@ -4,6 +4,7 @@ package com.module5.team2.controllers;
 import com.module5.team2.dto.request.CreateStaffRequest;
 import com.module5.team2.dto.request.LoginRequest;
 import com.module5.team2.dto.request.RegisterRequest;
+import com.module5.team2.dto.request.UpdateUserRequest;
 import com.module5.team2.dto.response.LoginResponse;
 import com.module5.team2.dto.response.UserProfileResponse;
 import com.module5.team2.entity.UserEntity;
@@ -11,6 +12,9 @@ import com.module5.team2.security.jwt.CustomUserDetails;
 import com.module5.team2.security.jwt.JwtTokenProvider;
 import com.module5.team2.service.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -69,6 +73,30 @@ public class UserController {
     }
 
     /**
+     * LOGIN DÀNH RIÊNG CHO ADMIN
+     */
+    @PostMapping("/admin/login")
+    public ResponseEntity<?> adminLogin(@RequestBody LoginRequest request) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        // Kiểm tra có là Admin không
+        if (userDetails.getUserEntity().getRole() != UserEntity.Role.ADMIN) {
+            return ResponseEntity.status(403).body("Truy cập bị từ chối: Chỉ dành cho Quản trị viên");
+        }
+
+        String jwt = jwtTokenProvider.generateToken(authentication);
+        return ResponseEntity.ok(new LoginResponse(
+                jwt,
+                userDetails.getUsername(),
+                userDetails.getUserEntity().getRole().name()
+        ));
+    }
+
+    /**
      * ADMIN tạo STAFF
      */
 
@@ -85,7 +113,9 @@ public class UserController {
                         .email(staff.getEmail())
                         .phone(staff.getPhone())
                         .name(staff.getName())
+                        .age(staff.getAge())
                         .role(staff.getRole().name())
+                        .address(staff.getAddress())
                         .status(staff.getStatus().name())
                         .salary(staff.getSalary())
                         .build()
@@ -100,27 +130,54 @@ public class UserController {
         return ResponseEntity.ok("Reset mật khẩu về mặc định thành công");
     }
 
+//    @GetMapping("/admin/users")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    public ResponseEntity<?> searchUsers (
+//            @RequestParam(required = false) String keyword) {
+//
+//        return ResponseEntity.ok(
+//                userService.searchUsers(keyword)
+//                        .stream()
+//                        .map(user -> UserProfileResponse.builder()
+//                                .id(user.getId())
+//                                .username(user.getUsername())
+//                                .email(user.getEmail())
+//                                .phone(user.getPhone())
+//                                .name(user.getName())
+//                                .role(user.getRole().name())
+//                                .status(user.getStatus().name())
+//                                .salary(user.getSalary())
+//                                .build()
+//                        )
+//                        .toList()
+//        );
+//    }
+
     @GetMapping("/admin/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> searchUsers (
-            @RequestParam(required = false) String keyword) {
+    public ResponseEntity<?> searchUsers(
+            @RequestParam(required = false) String keyword,
+            @PageableDefault(size = 10, sort = "id") Pageable pageable) { // Mặc định 10 record/trang
 
-        return ResponseEntity.ok(
-                userService.searchUsers(keyword)
-                        .stream()
-                        .map(user -> UserProfileResponse.builder()
-                                .id(user.getId())
-                                .username(user.getUsername())
-                                .email(user.getEmail())
-                                .phone(user.getPhone())
-                                .name(user.getName())
-                                .role(user.getRole().name())
-                                .status(user.getStatus().name())
-                                .salary(user.getSalary())
-                                .build()
-                        )
-                        .toList()
+        Page<UserEntity> userPage = userService.searchUsers(keyword, pageable);
+
+        // Map Page<Entity> sang Page<DTO> để trả về đầy đủ thông tin phân trang cho Frontend
+        Page<UserProfileResponse> responsePage = userPage.map(user ->
+                UserProfileResponse.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .phone(user.getPhone())
+                        .name(user.getName())
+                        .age(user.getAge())
+                        .role(user.getRole().name())
+                        .address(user.getAddress())
+                        .status(user.getStatus().name())
+                        .salary(user.getSalary())
+                        .build()
         );
+
+        return ResponseEntity.ok(responsePage);
     }
 
     /**
@@ -148,4 +205,78 @@ public class UserController {
                         .build()
         );
     }
+
+    @PutMapping("/user/profile")
+    public ResponseEntity<UserProfileResponse> updateOwnProfile(
+            Authentication authentication,
+            @RequestBody UpdateUserRequest request) {
+
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Integer currentUserId = userDetails.getUserEntity().getId();
+
+        UserEntity updatedUser = userService.updateUser(currentUserId, request);
+
+        return ResponseEntity.ok(
+                UserProfileResponse.builder()
+                        .id(updatedUser.getId())
+                        .username(updatedUser.getUsername())
+                        .email(updatedUser.getEmail())
+                        .phone(updatedUser.getPhone())
+                        .name(updatedUser.getName())
+                        .age(updatedUser.getAge())
+                        .address(updatedUser.getAddress())
+                        .role(updatedUser.getRole().name())
+                        .status(updatedUser.getStatus().name())
+                        .salary(updatedUser.getSalary())
+                        .build()
+        );
+    }
+
+    /**
+     * UPDATE USER
+     */
+    @PutMapping("/admin/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserProfileResponse> updateUser(
+            @PathVariable Integer id,
+            @RequestBody UpdateUserRequest request) {
+        UserEntity updatedUser = userService.updateUser(id, request);
+        return ResponseEntity.ok(
+                UserProfileResponse.builder()
+                        .id(updatedUser.getId())
+                        .username(updatedUser.getUsername())
+                        .email(updatedUser.getEmail())
+                        .phone(updatedUser.getPhone())
+                        .name(updatedUser.getName())
+                        .age(updatedUser.getAge())
+                        .address(updatedUser.getAddress())
+                        .role(updatedUser.getRole().name())
+                        .status(updatedUser.getStatus().name())
+                        .salary(updatedUser.getSalary())
+                        .build()
+        );
+    }
+
+    /**
+     * CHANGE STATUS (Block/Active user)
+     */
+    @PatchMapping("/admin/users/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> changeStatus(
+            @PathVariable Integer id,
+            @RequestParam UserEntity.Status status) {
+        userService.changeStatus(id, status);
+        return ResponseEntity.ok("Cập nhật trạng thái thành công sang: " + status);
+    }
+
+    /**
+     * DELETE USER
+     */
+    @DeleteMapping("/admin/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok("Xóa người dùng thành công");
+    }
+
 }
