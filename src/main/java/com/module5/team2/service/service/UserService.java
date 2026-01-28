@@ -10,4 +10,10 @@ public interface UserService {
     void changeStatus(Integer userId, UserEntity.Status status);
 
     void deleteUser(Integer userId);
+
+    void changePassword(Integer userId, String oldPassword, String newPassword);
+
+    void forgotPassword(String email);
+
+    void resetPassword(Integer userId);
 }

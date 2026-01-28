@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private static final String DEFAULT_STAFF_PASSWORD = "123456@Abc";
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * UPDATE USER
@@ -52,5 +54,47 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.deleteById(userId);
     }
+    /**
+     * CHANGE PASSWORD
+     */
+    @Override
+    public void changePassword(Integer userId, String oldPassword, String newPassword) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Mật khẩu cũ không đúng");
+        }
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new RuntimeException("Mật khẩu mới không được trùng mật khẩu cũ");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    /**
+     * FORGOT PASSWORD
+     */
+    @Override
+    public void forgotPassword(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
+        String defaultPassword = "123456@Abc";
+        user.setPassword(passwordEncoder.encode(defaultPassword));
+        userRepository.save(user);
+        // giả lập gửi mail
+        System.out.println(">>> Gửi mail tới: " + email);
+        System.out.println(">>> Mật khẩu mới: " + defaultPassword);
+    }
+    /**
+     * RESET PASSWORD
+     */
+    @Override
+    public void resetPassword(Integer userId) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+        user.setPassword(passwordEncoder.encode(DEFAULT_STAFF_PASSWORD));
+        userRepository.save(user);
+    }
+
 
 }
