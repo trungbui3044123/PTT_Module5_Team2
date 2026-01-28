@@ -47,29 +47,50 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // PUBLIC
-                        .requestMatchers(
-                                "/auth/**",
-                                "/forgot-password",
-                                "/reset-password"
-                        ).permitAll()
+//                        .requestMatchers(
+//                                "/auth/**",
+//                                "/forgot-password",
+//                                "/reset-password"
+//                        ).permitAll()
 
                         // ADMIN
-                        .requestMatchers("/admin/**")
-                        .hasRole("ADMIN")
+//                        .requestMatchers("/admin/**")
+//                        .hasRole("ADMIN")
 
                         // STAFF
-                        .requestMatchers("/staff/**")
-                        .hasAnyRole("STAFF", "ADMIN")
+//                        .requestMatchers("/staff/**")
+//                        .hasAnyRole("STAFF", "ADMIN")
 
                         // Supplier
-                        .requestMatchers("/Supplier/**")
-                        .hasRole("SUPPLIER")
+//                        .requestMatchers("/Supplier/**")
+//                        .hasRole("SUPPLIER")
 
                         // CUSTOMER
-                        .requestMatchers("/customer/**")
-                        .hasRole("CUSTOMER")
+//                        .requestMatchers("/customer/**")
+//                        .hasRole("CUSTOMER")
 
-                        .anyRequest().authenticated()
+//                        .anyRequest().authenticated()
+
+                                // ===== PUBLIC =====
+                                .requestMatchers(
+                                        "/api/public/**"
+                                ).permitAll()
+
+                                // ===== ADMIN =====
+                                .requestMatchers("/api/admin/login").permitAll()
+                                .requestMatchers("/api/admin/**")
+                                .hasRole("ADMIN")
+
+                                // ===== STAFF =====
+                                .requestMatchers("/api/staff/**")
+                                .hasAnyRole("STAFF")
+
+                                // ===== USER LOGIN RỒI (customer / supplier / staff / admin) =====
+                                .requestMatchers("/api/user/**")
+                                .authenticated()
+
+                                // ===== CÒN LẠI =====
+                                .anyRequest().authenticated()
                 );
 
         http.addFilterBefore(
