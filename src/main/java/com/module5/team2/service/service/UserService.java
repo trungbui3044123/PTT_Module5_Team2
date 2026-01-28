@@ -17,6 +17,12 @@ public interface UserService {
 
     void deleteUser(Integer userId);
 
+    void changePassword(Integer userId, String oldPassword, String newPassword);
+
+    void forgotPassword(String email);
+
+    void resetPassword(Integer userId);
+  
     void resetStaffPassword(Integer staffId);
 
     UserEntity register(RegisterRequest request);
