@@ -1,10 +1,7 @@
 package com.module5.team2.controllers;
 
 
-import com.module5.team2.dto.request.CreateStaffRequest;
-import com.module5.team2.dto.request.LoginRequest;
-import com.module5.team2.dto.request.RegisterRequest;
-import com.module5.team2.dto.request.UpdateUserRequest;
+import com.module5.team2.dto.request.*;
 import com.module5.team2.dto.response.LoginResponse;
 import com.module5.team2.dto.response.UserProfileResponse;
 import com.module5.team2.entity.UserEntity;
@@ -278,5 +275,29 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok("Xóa người dùng thành công");
     }
+
+    /**
+     * CHANGE PASSWORD
+     */
+    @PutMapping("/user/change-password")
+    public ResponseEntity<?> changePassword(Authentication authentication, @RequestBody ChangePasswordRequest request) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Integer userId = userDetails.getUserEntity().getId();
+        userService.changePassword(userId, request.getOldPassword(), request.getNewPassword());
+        return ResponseEntity.ok("Đổi mật khẩu thành công");
+    }
+
+    /**
+     * FORGOT PASSWORD
+     */
+    @PostMapping("/public/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        userService.forgotPassword(request.getEmail());
+        return ResponseEntity.ok("Mật khẩu mới đã được gửi về email");
+    }
+
+
+
+
 
 }
