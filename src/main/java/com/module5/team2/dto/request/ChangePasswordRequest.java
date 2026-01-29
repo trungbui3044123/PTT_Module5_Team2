@@ -16,4 +16,7 @@ public class ChangePasswordRequest {
             message = "Mật khẩu phải ≥ 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt"
     )
     private String newPassword;
+
+    @NotBlank(message = "Xác nhận mật khẩu không được để trống")
+    private String confirmPassword;
 }
