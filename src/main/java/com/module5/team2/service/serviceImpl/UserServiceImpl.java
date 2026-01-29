@@ -2,23 +2,19 @@ package com.module5.team2.service.serviceImpl;
 
 import com.module5.team2.dto.request.UpdateUserRequest;
 import com.module5.team2.entity.UserEntity;
+import com.module5.team2.enums.Role;
+import com.module5.team2.enums.Status;
 import com.module5.team2.repository.UserRepository;
 import com.module5.team2.service.service.UserService;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.module5.team2.dto.request.CreateStaffRequest;
 import com.module5.team2.dto.request.RegisterRequest;
-import com.module5.team2.entity.UserEntity;
-import com.module5.team2.repository.UserRepository;
-import com.module5.team2.service.service.UserService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +22,8 @@ import java.util.List;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private static final String DEFAULT_STAFF_PASSWORD = "123456@Abc";
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * UPDATE USER
@@ -46,7 +44,7 @@ public class UserServiceImpl implements UserService {
      * BLOCK / ACTIVE / BANNED
      */
     @Override
-    public void changeStatus(Integer userId, UserEntity.Status status) {
+    public void changeStatus(Integer userId, Status status) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
         user.setStatus(status);
@@ -63,11 +61,40 @@ public class UserServiceImpl implements UserService {
         }
         userRepository.deleteById(userId);
     }
+    /**
+     * CHANGE PASSWORD
+     */
+    @Override
+    public void changePassword(Integer userId, String oldPassword, String newPassword) {
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new RuntimeException("Mật khẩu cũ không đúng");
+        }
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new RuntimeException("Mật khẩu mới không được trùng mật khẩu cũ");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 
-    private static final String DEFAULT_STAFF_PASSWORD = "123456@Abc";
+    /**
+     * FORGOT PASSWORD
+     */
+    @Override
+    public void forgotPassword(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
+        String defaultPassword = "123456@Abc";
+        user.setPassword(passwordEncoder.encode(defaultPassword));
+        userRepository.save(user);
+        // giả lập gửi mail
+        System.out.println(">>> Gửi mail tới: " + email);
+        System.out.println(">>> Mật khẩu mới: " + defaultPassword);
+    }
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+
+
 
 
     /**
@@ -83,8 +110,8 @@ public class UserServiceImpl implements UserService {
         }
 
         if (request.getRole() == null ||
-                (request.getRole() != UserEntity.Role.CUSTOMER &&
-                        request.getRole() != UserEntity.Role.SUPPLIER)) {
+                (request.getRole() != Role.CUSTOMER &&
+                        request.getRole() != Role.SUPPLIER)) {
             throw new RuntimeException("Role không hợp lệ");
         }
 
@@ -95,7 +122,7 @@ public class UserServiceImpl implements UserService {
                 .phone(request.getPhone())
                 .name(request.getName())
                 .role(request.getRole())
-                .status(UserEntity.Status.active)
+                .status(Status.ACTIVE)
                 .build();
 
         return userRepository.save(user);
@@ -120,7 +147,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if (request.getSalary() == null ||
-                request.getSalary() <= 0 ||
+                request.getSalary() <= 0.0 ||
                 request.getSalary() >= 100000000) {
             throw new RuntimeException("Lương không hợp lệ");
         }
@@ -133,8 +160,8 @@ public class UserServiceImpl implements UserService {
                 .phone(request.getPhone())
                 .address(request.getAddress())
                 .salary(request.getSalary())
-                .role(UserEntity.Role.STAFF)
-                .status(UserEntity.Status.active)
+                .role(Role.STAFF)
+                .status(Status.ACTIVE)
                 .build();
 
         return userRepository.save(staff);
@@ -146,7 +173,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() ->
                         new RuntimeException("Không tìm thấy nhân viên"));
 
-        if (staff.getRole() != UserEntity.Role.STAFF) {
+        if (staff.getRole() != Role.STAFF) {
             throw new RuntimeException("Chỉ reset mật khẩu cho STAFF");
         }
 
@@ -164,18 +191,49 @@ public class UserServiceImpl implements UserService {
                         new RuntimeException("Không tìm thấy user"));
     }
 
+//    @Override
+//    @Transactional(readOnly = true)
+//    public List<UserEntity> searchUsers(String keyword) {
+//        if (keyword == null || keyword.trim().isEmpty()) {
+//            // nếu không nhập gì => trả về tất cả
+//            return userRepository.findAll();
+//        }
+//
+//        return userRepository
+//                .findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
+//                        keyword,
+//                        keyword
+//                );
+//    }
+
+
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntity> searchUsers(String keyword) {
+    public Page<UserEntity> searchUsers(String keyword, Pageable pageable) {
         if (keyword == null || keyword.trim().isEmpty()) {
-            // nếu không nhập gì => trả về tất cả
-            return userRepository.findAll();
+            return userRepository.findAll(pageable);
         }
 
-        return userRepository
-                .findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
-                        keyword,
-                        keyword
-                );
+        return userRepository.findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
+                keyword, keyword, pageable
+        );
+    }
+
+    //Seed Post tạo dữ liệu admin mẫu
+    @jakarta.annotation.PostConstruct
+    public void initAdmin() {
+        if (userRepository.findByUsername("admin").isEmpty()) {
+            UserEntity admin = UserEntity.builder()
+                    .username("admin")
+                    .password(passwordEncoder.encode("admin123")) // Mật khẩu để login Postman
+                    .email("admin@gmail.com")
+                    .phone("0999999999")
+                    .name("System Admin")
+                    .role(Role.ADMIN)
+                    .status(Status.ACTIVE)
+                    .build();
+            userRepository.save(admin);
+            System.out.println(">>> Đã khởi tạo tài khoản Admin mặc định: admin/admin123");
+        }
     }
 }

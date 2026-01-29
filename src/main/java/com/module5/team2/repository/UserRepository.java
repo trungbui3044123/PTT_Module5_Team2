@@ -1,6 +1,8 @@
 package com.module5.team2.repository;
 
 import com.module5.team2.entity.UserEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -19,4 +21,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     List<UserEntity> findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
             String username, String name
     );
+
+    Page<UserEntity> findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
+            String username, String name, Pageable pageable);
+
 }

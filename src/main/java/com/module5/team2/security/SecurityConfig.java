@@ -77,6 +77,7 @@ public class SecurityConfig {
                                 ).permitAll()
 
                                 // ===== ADMIN =====
+                                .requestMatchers("/api/admin/login").permitAll()
                                 .requestMatchers("/api/admin/**")
                                 .hasRole("ADMIN")
 
