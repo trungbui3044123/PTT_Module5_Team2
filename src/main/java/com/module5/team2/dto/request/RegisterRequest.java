@@ -2,6 +2,8 @@ package com.module5.team2.dto.request;
 
 import com.module5.team2.enums.Role;
 import jakarta.validation.constraints.*;
+import com.module5.team2.entity.UserEntity;
+import com.module5.team2.enums.Role;
 import lombok.Data;
 
 @Data
