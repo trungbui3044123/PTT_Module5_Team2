@@ -21,7 +21,6 @@ public interface UserService {
 
     void forgotPassword(String email);
 
-    void resetPassword(Integer userId);
   
     void resetStaffPassword(Integer staffId);
 

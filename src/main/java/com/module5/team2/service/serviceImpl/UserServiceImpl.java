@@ -14,8 +14,6 @@ import com.module5.team2.dto.request.RegisterRequest;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -91,16 +89,6 @@ public class UserServiceImpl implements UserService {
         // giả lập gửi mail
         System.out.println(">>> Gửi mail tới: " + email);
         System.out.println(">>> Mật khẩu mới: " + defaultPassword);
-    }
-    /**
-     * RESET PASSWORD
-     */
-    @Override
-    public void resetPassword(Integer userId) {
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
-        user.setPassword(passwordEncoder.encode(DEFAULT_STAFF_PASSWORD));
-        userRepository.save(user);
     }
 
 
