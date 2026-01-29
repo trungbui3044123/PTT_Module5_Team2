@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.module5.team2.enums.Role;
+import com.module5.team2.enums.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -73,7 +75,7 @@ public class UserEntity {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (status == null) {
-            status = Status.active;
+            status = Status.ACTIVE;
         }
     }
 
@@ -81,15 +83,7 @@ public class UserEntity {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-    public enum Role {
-        ADMIN,
-        STAFF,
-        CUSTOMER,
-        SUPPLIER,
-        USER,
-    }
 
-    public enum Status {
-        block, active, banned
-    }
+
+
 }

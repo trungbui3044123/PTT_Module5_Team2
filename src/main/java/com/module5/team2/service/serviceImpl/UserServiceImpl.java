@@ -2,6 +2,8 @@ package com.module5.team2.service.serviceImpl;
 
 import com.module5.team2.dto.request.UpdateUserRequest;
 import com.module5.team2.entity.UserEntity;
+import com.module5.team2.enums.Role;
+import com.module5.team2.enums.Status;
 import com.module5.team2.repository.UserRepository;
 import com.module5.team2.service.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +44,7 @@ public class UserServiceImpl implements UserService {
      * BLOCK / ACTIVE / BANNED
      */
     @Override
-    public void changeStatus(Integer userId, UserEntity.Status status) {
+    public void changeStatus(Integer userId, Status status) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
         user.setStatus(status);
@@ -108,8 +110,8 @@ public class UserServiceImpl implements UserService {
         }
 
         if (request.getRole() == null ||
-                (request.getRole() != UserEntity.Role.CUSTOMER &&
-                        request.getRole() != UserEntity.Role.SUPPLIER)) {
+                (request.getRole() != Role.CUSTOMER &&
+                        request.getRole() != Role.SUPPLIER)) {
             throw new RuntimeException("Role không hợp lệ");
         }
 
@@ -120,7 +122,7 @@ public class UserServiceImpl implements UserService {
                 .phone(request.getPhone())
                 .name(request.getName())
                 .role(request.getRole())
-                .status(UserEntity.Status.active)
+                .status(Status.ACTIVE)
                 .build();
 
         return userRepository.save(user);
@@ -158,8 +160,8 @@ public class UserServiceImpl implements UserService {
                 .phone(request.getPhone())
                 .address(request.getAddress())
                 .salary(request.getSalary())
-                .role(UserEntity.Role.STAFF)
-                .status(UserEntity.Status.active)
+                .role(Role.STAFF)
+                .status(Status.ACTIVE)
                 .build();
 
         return userRepository.save(staff);
@@ -171,7 +173,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() ->
                         new RuntimeException("Không tìm thấy nhân viên"));
 
-        if (staff.getRole() != UserEntity.Role.STAFF) {
+        if (staff.getRole() != Role.STAFF) {
             throw new RuntimeException("Chỉ reset mật khẩu cho STAFF");
         }
 
@@ -227,8 +229,8 @@ public class UserServiceImpl implements UserService {
                     .email("admin@gmail.com")
                     .phone("0999999999")
                     .name("System Admin")
-                    .role(UserEntity.Role.ADMIN)
-                    .status(UserEntity.Status.active)
+                    .role(Role.ADMIN)
+                    .status(Status.ACTIVE)
                     .build();
             userRepository.save(admin);
             System.out.println(">>> Đã khởi tạo tài khoản Admin mặc định: admin/admin123");

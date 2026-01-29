@@ -4,6 +4,7 @@ import com.module5.team2.dto.request.CreateStaffRequest;
 import com.module5.team2.dto.request.RegisterRequest;
 import com.module5.team2.dto.request.UpdateUserRequest;
 import com.module5.team2.entity.UserEntity;
+import com.module5.team2.enums.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -13,7 +14,7 @@ import java.util.List;
 public interface UserService {
     UserEntity updateUser(Integer userId, UpdateUserRequest request);
 
-    void changeStatus(Integer userId, UserEntity.Status status);
+    void changeStatus(Integer userId, Status status);
 
     void deleteUser(Integer userId);
 
