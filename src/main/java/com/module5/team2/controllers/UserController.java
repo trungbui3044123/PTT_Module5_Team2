@@ -10,6 +10,7 @@ import com.module5.team2.enums.Status;
 import com.module5.team2.security.jwt.CustomUserDetails;
 import com.module5.team2.security.jwt.JwtTokenProvider;
 import com.module5.team2.service.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +34,7 @@ public class UserController {
      * CUSTOMER & SUPPLIER đăng ký
      */
     @PostMapping("/public/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         UserEntity user = userService.register(request);
 
         return ResponseEntity.ok(
@@ -53,7 +54,7 @@ public class UserController {
      * Login dùng chung cho TẤT CẢ role
      */
     @PostMapping("/public/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
@@ -75,7 +76,7 @@ public class UserController {
      * LOGIN DÀNH RIÊNG CHO ADMIN
      */
     @PostMapping("/admin/login")
-    public ResponseEntity<?> adminLogin(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> adminLogin(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
@@ -102,6 +103,7 @@ public class UserController {
     @PostMapping("/admin/users/staff")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserProfileResponse> createStaff(
+            @Valid
             @RequestBody CreateStaffRequest request) {
         UserEntity staff = userService.createStaff(request);
 
@@ -208,7 +210,7 @@ public class UserController {
     @PutMapping("/user/profile")
     public ResponseEntity<UserProfileResponse> updateOwnProfile(
             Authentication authentication,
-            @RequestBody UpdateUserRequest request) {
+            @Valid @RequestBody UpdateUserRequest request) {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         Integer currentUserId = userDetails.getUserEntity().getId();
@@ -282,7 +284,7 @@ public class UserController {
      * CHANGE PASSWORD
      */
     @PutMapping("/user/change-password")
-    public ResponseEntity<?> changePassword(Authentication authentication, @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<?> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         Integer userId = userDetails.getUserEntity().getId();
         userService.changePassword(userId, request.getOldPassword(), request.getNewPassword());
@@ -293,13 +295,10 @@ public class UserController {
      * FORGOT PASSWORD
      */
     @PostMapping("/public/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         userService.forgotPassword(request.getEmail());
         return ResponseEntity.ok("Mật khẩu mới đã được gửi về email");
     }
-
-
-
 
 
 }

@@ -69,7 +69,6 @@ public class UserEntity {
     @Column
     private Double salary;
 
-
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
