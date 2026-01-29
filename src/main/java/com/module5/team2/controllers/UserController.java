@@ -5,6 +5,8 @@ import com.module5.team2.dto.request.*;
 import com.module5.team2.dto.response.LoginResponse;
 import com.module5.team2.dto.response.UserProfileResponse;
 import com.module5.team2.entity.UserEntity;
+import com.module5.team2.enums.Role;
+import com.module5.team2.enums.Status;
 import com.module5.team2.security.jwt.CustomUserDetails;
 import com.module5.team2.security.jwt.JwtTokenProvider;
 import com.module5.team2.service.service.UserService;
@@ -81,7 +83,7 @@ public class UserController {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
         // Kiểm tra có là Admin không
-        if (userDetails.getUserEntity().getRole() != UserEntity.Role.ADMIN) {
+        if (userDetails.getUserEntity().getRole() != Role.ADMIN) {
             return ResponseEntity.status(403).body("Truy cập bị từ chối: Chỉ dành cho Quản trị viên");
         }
 
@@ -261,7 +263,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> changeStatus(
             @PathVariable Integer id,
-            @RequestParam UserEntity.Status status) {
+            @RequestParam Status status) {
         userService.changeStatus(id, status);
         return ResponseEntity.ok("Cập nhật trạng thái thành công sang: " + status);
     }

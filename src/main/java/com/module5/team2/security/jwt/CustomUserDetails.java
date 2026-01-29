@@ -1,7 +1,7 @@
 package com.module5.team2.security.jwt;
 
 import com.module5.team2.entity.UserEntity;
-import com.module5.team2.entity.UserEntity.Status;
+import com.module5.team2.enums.Status;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -38,13 +38,13 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getStatus() == Status.active;
+        return user.getStatus() == Status.ACTIVE;
     }
 
 
     @Override
     public boolean isAccountNonLocked() {
-        return user.getStatus() == Status.active;
+        return user.getStatus() == Status.ACTIVE;
     }
 
 
@@ -66,6 +66,6 @@ public class CustomUserDetails implements UserDetails {
 
 
     public boolean isBanned() {
-        return user.getStatus() == Status.banned;
+        return user.getStatus() == Status.BANNED;
     }
 }
