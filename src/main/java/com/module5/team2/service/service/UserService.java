@@ -1,5 +1,6 @@
 package com.module5.team2.service.service;
 
+import com.module5.team2.dto.request.ChangePasswordRequest;
 import com.module5.team2.dto.request.CreateStaffRequest;
 import com.module5.team2.dto.request.RegisterRequest;
 import com.module5.team2.dto.request.UpdateUserRequest;
@@ -18,7 +19,7 @@ public interface UserService {
 
     void deleteUser(Integer userId);
 
-    void changePassword(Integer userId, String oldPassword, String newPassword);
+    void changePassword(Integer userId, ChangePasswordRequest request);
 
     void forgotPassword(String email);
 

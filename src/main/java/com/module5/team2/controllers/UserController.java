@@ -2,11 +2,13 @@ package com.module5.team2.controllers;
 
 
 import com.module5.team2.dto.request.*;
+import com.module5.team2.dto.response.ApiResponse;
 import com.module5.team2.dto.response.LoginResponse;
 import com.module5.team2.dto.response.UserProfileResponse;
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.enums.Role;
 import com.module5.team2.enums.Status;
+import com.module5.team2.exception.BusinessException;
 import com.module5.team2.security.jwt.CustomUserDetails;
 import com.module5.team2.security.jwt.JwtTokenProvider;
 import com.module5.team2.service.service.UserService;
@@ -34,18 +36,24 @@ public class UserController {
      * CUSTOMER & SUPPLIER đăng ký
      */
     @PostMapping("/public/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse<UserProfileResponse>> register(@Valid @RequestBody RegisterRequest request) {
         UserEntity user = userService.register(request);
 
+        UserProfileResponse data = UserProfileResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .name(user.getName())
+                .role(user.getRole().name())
+                .status(user.getStatus().name())
+                .build();
+
         return ResponseEntity.ok(
-                UserProfileResponse.builder()
-                        .id(user.getId())
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .phone(user.getPhone())
-                        .name(user.getName())
-                        .role(user.getRole().name())
-                        .status(user.getStatus().name())
+                ApiResponse.<UserProfileResponse>builder()
+                        .status(200)
+                        .message("Đăng ký thành công")
+                        .data(data)
                         .build()
         );
     }
@@ -54,7 +62,8 @@ public class UserController {
      * Login dùng chung cho TẤT CẢ role
      */
     @PostMapping("/public/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
@@ -63,20 +72,26 @@ public class UserController {
 
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        LoginResponse response = new LoginResponse(
+        LoginResponse data = new LoginResponse(
                 jwt,
                 userDetails.getUsername(),
                 userDetails.getUserEntity().getRole().name()
         );
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(
+                ApiResponse.<LoginResponse>builder()
+                        .status(200)
+                        .message("Đăng nhập thành công")
+                        .data(data)
+                        .build()
+        );
     }
 
     /**
      * LOGIN DÀNH RIÊNG CHO ADMIN
      */
     @PostMapping("/admin/login")
-    public ResponseEntity<?> adminLogin(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
@@ -85,15 +100,24 @@ public class UserController {
 
         // Kiểm tra có là Admin không
         if (userDetails.getUserEntity().getRole() != Role.ADMIN) {
-            return ResponseEntity.status(403).body("Truy cập bị từ chối: Chỉ dành cho Quản trị viên");
+            throw new BusinessException("Chỉ Admin mới được đăng nhập");
         }
 
         String jwt = jwtTokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new LoginResponse(
+
+        LoginResponse data = new LoginResponse(
                 jwt,
                 userDetails.getUsername(),
                 userDetails.getUserEntity().getRole().name()
-        ));
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<LoginResponse>builder()
+                        .status(200)
+                        .message("Admin đăng nhập thành công")
+                        .data(data)
+                        .build()
+        );
     }
 
     /**
@@ -102,33 +126,44 @@ public class UserController {
 
     @PostMapping("/admin/users/staff")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserProfileResponse> createStaff(
+    public ResponseEntity<ApiResponse<UserProfileResponse>> createStaff(
             @Valid
             @RequestBody CreateStaffRequest request) {
         UserEntity staff = userService.createStaff(request);
 
+        UserProfileResponse data = UserProfileResponse.builder()
+                .id(staff.getId())
+                .username(staff.getUsername())
+                .email(staff.getEmail())
+                .phone(staff.getPhone())
+                .name(staff.getName())
+                .age(staff.getAge())
+                .role(staff.getRole().name())
+                .address(staff.getAddress())
+                .status(staff.getStatus().name())
+                .salary(staff.getSalary())
+                .build();
+
         return ResponseEntity.ok(
-                UserProfileResponse.builder()
-                        .id(staff.getId())
-                        .username(staff.getUsername())
-                        .email(staff.getEmail())
-                        .phone(staff.getPhone())
-                        .name(staff.getName())
-                        .age(staff.getAge())
-                        .role(staff.getRole().name())
-                        .address(staff.getAddress())
-                        .status(staff.getStatus().name())
-                        .salary(staff.getSalary())
+                ApiResponse.<UserProfileResponse>builder()
+                        .status(201)
+                        .message("Tạo nhân viên thành công")
+                        .data(data)
                         .build()
         );
     }
 
     @PutMapping("/admin/users/staff/{id}/reset-password")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> resetStaffPassword(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> resetStaffPassword(@PathVariable Integer id) {
         userService.resetStaffPassword(id);
 
-        return ResponseEntity.ok("Reset mật khẩu về mặc định thành công");
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .status(200)
+                        .message("Reset mật khẩu nhân viên thành công")
+                        .build()
+        );
     }
 
 //    @GetMapping("/admin/users")
@@ -178,37 +213,49 @@ public class UserController {
                         .build()
         );
 
-        return ResponseEntity.ok(responsePage);
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(200)
+                        .message("Lấy danh sách người dùng thành công")
+                        .data(responsePage)
+                        .build()
+        );
     }
 
     /**
      * PROFILE – thông tin user đang đăng nhập
      */
     @GetMapping("/user/profile")
-    public ResponseEntity<UserProfileResponse> profile(
+    public ResponseEntity<ApiResponse<UserProfileResponse>> profile(
             Authentication authentication) {
         CustomUserDetails userDetails =
                 (CustomUserDetails) authentication.getPrincipal();
         UserEntity user = userDetails.getUserEntity();
 
+        UserProfileResponse data = UserProfileResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .name(user.getName())
+                .age(user.getAge())
+                .address(user.getAddress())
+                .role(user.getRole().name())
+                .status(user.getStatus().name())
+                .salary(user.getSalary())
+                .build();
+
         return ResponseEntity.ok(
-                UserProfileResponse.builder()
-                        .id(user.getId())
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .phone(user.getPhone())
-                        .name(user.getName())
-                        .age(user.getAge())
-                        .address(user.getAddress())
-                        .role(user.getRole().name())
-                        .status(user.getStatus().name())
-                        .salary(user.getSalary())
+                ApiResponse.<UserProfileResponse>builder()
+                        .status(200)
+                        .message("Lấy thông tin người dùng thành công")
+                        .data(data)
                         .build()
         );
     }
 
     @PutMapping("/user/profile")
-    public ResponseEntity<UserProfileResponse> updateOwnProfile(
+    public ResponseEntity<ApiResponse<UserProfileResponse>> updateOwnProfile(
             Authentication authentication,
             @Valid @RequestBody UpdateUserRequest request) {
 
@@ -217,18 +264,24 @@ public class UserController {
 
         UserEntity updatedUser = userService.updateUser(currentUserId, request);
 
+        UserProfileResponse data = UserProfileResponse.builder()
+                .id(updatedUser.getId())
+                .username(updatedUser.getUsername())
+                .email(updatedUser.getEmail())
+                .phone(updatedUser.getPhone())
+                .name(updatedUser.getName())
+                .age(updatedUser.getAge())
+                .address(updatedUser.getAddress())
+                .role(updatedUser.getRole().name())
+                .status(updatedUser.getStatus().name())
+                .salary(updatedUser.getSalary())
+                .build();
+
         return ResponseEntity.ok(
-                UserProfileResponse.builder()
-                        .id(updatedUser.getId())
-                        .username(updatedUser.getUsername())
-                        .email(updatedUser.getEmail())
-                        .phone(updatedUser.getPhone())
-                        .name(updatedUser.getName())
-                        .age(updatedUser.getAge())
-                        .address(updatedUser.getAddress())
-                        .role(updatedUser.getRole().name())
-                        .status(updatedUser.getStatus().name())
-                        .salary(updatedUser.getSalary())
+                ApiResponse.<UserProfileResponse>builder()
+                        .status(200)
+                        .message("Cập nhật thông tin cá nhân thành công")
+                        .data(data)
                         .build()
         );
     }
@@ -238,22 +291,29 @@ public class UserController {
      */
     @PutMapping("/admin/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserProfileResponse> updateUser(
+    public ResponseEntity<ApiResponse<UserProfileResponse>> updateUser(
             @PathVariable Integer id,
             @RequestBody UpdateUserRequest request) {
         UserEntity updatedUser = userService.updateUser(id, request);
+
+        UserProfileResponse data = UserProfileResponse.builder()
+                .id(updatedUser.getId())
+                .username(updatedUser.getUsername())
+                .email(updatedUser.getEmail())
+                .phone(updatedUser.getPhone())
+                .name(updatedUser.getName())
+                .age(updatedUser.getAge())
+                .address(updatedUser.getAddress())
+                .role(updatedUser.getRole().name())
+                .status(updatedUser.getStatus().name())
+                .salary(updatedUser.getSalary())
+                .build();
+
         return ResponseEntity.ok(
-                UserProfileResponse.builder()
-                        .id(updatedUser.getId())
-                        .username(updatedUser.getUsername())
-                        .email(updatedUser.getEmail())
-                        .phone(updatedUser.getPhone())
-                        .name(updatedUser.getName())
-                        .age(updatedUser.getAge())
-                        .address(updatedUser.getAddress())
-                        .role(updatedUser.getRole().name())
-                        .status(updatedUser.getStatus().name())
-                        .salary(updatedUser.getSalary())
+                ApiResponse.<UserProfileResponse>builder()
+                        .status(200)
+                        .message("Cập nhật người dùng thành công")
+                        .data(data)
                         .build()
         );
     }
@@ -263,11 +323,16 @@ public class UserController {
      */
     @PatchMapping("/admin/users/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> changeStatus(
+    public ResponseEntity<ApiResponse<Void>> changeStatus(
             @PathVariable Integer id,
             @RequestParam Status status) {
         userService.changeStatus(id, status);
-        return ResponseEntity.ok("Cập nhật trạng thái thành công sang: " + status);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .status(200)
+                        .message("Cập nhật trạng thái thành công")
+                        .build()
+        );
     }
 
     /**
@@ -275,29 +340,46 @@ public class UserController {
      */
     @DeleteMapping("/admin/users/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteUser(@PathVariable Integer id) {
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);
-        return ResponseEntity.ok("Xóa người dùng thành công");
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .status(200)
+                        .message("Xóa người dùng thành công")
+                        .build()
+        );
     }
 
     /**
      * CHANGE PASSWORD
      */
     @PutMapping("/user/change-password")
-    public ResponseEntity<?> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
+    public ResponseEntity<ApiResponse<Void>> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Integer userId = userDetails.getUserEntity().getId();
-        userService.changePassword(userId, request.getOldPassword(), request.getNewPassword());
-        return ResponseEntity.ok("Đổi mật khẩu thành công");
+        userService.changePassword(
+                userDetails.getUserEntity().getId(),
+                request
+        );
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .status(200)
+                        .message("Đổi mật khẩu thành công")
+                        .build()
+        );
     }
 
     /**
      * FORGOT PASSWORD
      */
     @PostMapping("/public/forgot-password")
-    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         userService.forgotPassword(request.getEmail());
-        return ResponseEntity.ok("Mật khẩu mới đã được gửi về email");
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .status(200)
+                        .message("Mật khẩu mới đã được gửi về email")
+                        .build()
+        );
     }
 
 
