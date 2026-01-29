@@ -1,9 +1,12 @@
 package com.module5.team2.service.serviceImpl;
 
+import com.module5.team2.dto.request.ChangePasswordRequest;
 import com.module5.team2.dto.request.UpdateUserRequest;
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.enums.Role;
 import com.module5.team2.enums.Status;
+import com.module5.team2.exception.BusinessException;
+import com.module5.team2.exception.ResourceNotFoundException;
 import com.module5.team2.repository.UserRepository;
 import com.module5.team2.service.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +34,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEntity updateUser(Integer userId, UpdateUserRequest request) {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
         user.setName(request.getName());
         user.setAge(request.getAge());
         user.setPhone(request.getPhone());
@@ -46,7 +49,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changeStatus(Integer userId, Status status) {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
         user.setStatus(status);
         userRepository.save(user);
     }
@@ -57,24 +60,43 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Integer userId) {
         if (!userRepository.existsById(userId)) {
-            throw new RuntimeException("User không tồn tại");
+            throw new ResourceNotFoundException("User không tồn tại");
         }
         userRepository.deleteById(userId);
     }
+
     /**
      * CHANGE PASSWORD
      */
     @Override
-    public void changePassword(Integer userId, String oldPassword, String newPassword) {
+    public void changePassword(Integer userId, ChangePasswordRequest request) {
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
-        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new RuntimeException("Mật khẩu cũ không đúng");
+                .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
+//        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+//            throw new BusinessException("Mật khẩu cũ không đúng");
+//        }
+//        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+//            throw new BusinessException("Mật khẩu mới không được trùng mật khẩu cũ");
+//        }
+//        user.setPassword(passwordEncoder.encode(newPassword));
+//        userRepository.save(user);
+        // Check mật khẩu cũ
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            throw new BusinessException("Mật khẩu cũ không đúng");
         }
-        if (passwordEncoder.matches(newPassword, user.getPassword())) {
-            throw new RuntimeException("Mật khẩu mới không được trùng mật khẩu cũ");
+
+        // Check confirm password
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BusinessException("Mật khẩu xác nhận không khớp");
         }
-        user.setPassword(passwordEncoder.encode(newPassword));
+
+        // Check trùng mật khẩu cũ
+        if (passwordEncoder.matches(request.getNewPassword(), user.getPassword())) {
+            throw new BusinessException("Mật khẩu mới không được trùng mật khẩu cũ");
+        }
+
+        // 4. Update password
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
 
@@ -84,7 +106,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void forgotPassword(String email) {
         UserEntity user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Email không tồn tại"));
+                .orElseThrow(() -> new ResourceNotFoundException("Email không tồn tại"));
         String defaultPassword = "123456@Abc";
         user.setPassword(passwordEncoder.encode(defaultPassword));
         userRepository.save(user);
@@ -94,25 +116,22 @@ public class UserServiceImpl implements UserService {
     }
 
 
-
-
-
     /**
      * CUSTOMER & SUPPLIER đăng ký
      */
     @Override
     public UserEntity register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username đã tồn tại");
+            throw new BusinessException("Username đã tồn tại");
         }
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email đã tồn tại");
+            throw new BusinessException("Email đã tồn tại");
         }
 
         if (request.getRole() == null ||
                 (request.getRole() != Role.CUSTOMER &&
                         request.getRole() != Role.SUPPLIER)) {
-            throw new RuntimeException("Role không hợp lệ");
+            throw new BusinessException("Role không hợp lệ");
         }
 
         UserEntity user = UserEntity.builder()
@@ -134,23 +153,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserEntity createStaff(CreateStaffRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username đã tồn tại");
+            throw new BusinessException("Username đã tồn tại");
         }
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email đã tồn tại");
+            throw new BusinessException("Email đã tồn tại");
         }
 
-        if (request.getAge() == null ||
-                request.getAge() <= 18 || request.getAge() >= 60) {
-            throw new RuntimeException("Tuổi phải > 18 và < 60");
-        }
-
-        if (request.getSalary() == null ||
-                request.getSalary() <= 0.0 ||
-                request.getSalary() >= 100000000) {
-            throw new RuntimeException("Lương không hợp lệ");
-        }
         UserEntity staff = UserEntity.builder()
                 .username(request.getUsername())
                 .password(passwordEncoder.encode(DEFAULT_STAFF_PASSWORD))
@@ -171,10 +180,10 @@ public class UserServiceImpl implements UserService {
     public void resetStaffPassword(Integer staffId) {
         UserEntity staff = userRepository.findById(staffId)
                 .orElseThrow(() ->
-                        new RuntimeException("Không tìm thấy nhân viên"));
+                        new ResourceNotFoundException("Không tìm thấy nhân viên"));
 
         if (staff.getRole() != Role.STAFF) {
-            throw new RuntimeException("Chỉ reset mật khẩu cho STAFF");
+            throw new BusinessException("Chỉ reset mật khẩu cho STAFF");
         }
 
         staff.setPassword(

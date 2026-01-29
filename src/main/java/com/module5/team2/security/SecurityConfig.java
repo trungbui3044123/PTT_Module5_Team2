@@ -1,5 +1,7 @@
 package com.module5.team2.security;
 
+import com.module5.team2.exception.CustomAccessDeniedHandler;
+import com.module5.team2.exception.CustomAuthenticationEntryPoint;
 import com.module5.team2.security.jwt.JwtAuthenticationEntryPoint;
 import com.module5.team2.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -34,12 +36,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http)
+    public SecurityFilterChain filterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler)
             throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(entryPoint)
+                        .authenticationEntryPoint(customAuthenticationEntryPoint).accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .sessionManagement(s ->
                         s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
