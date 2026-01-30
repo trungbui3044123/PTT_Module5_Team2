@@ -80,10 +80,10 @@
         <button type="submit">Login</button>
     </form>
     <div>
-        <h4> <a href="/Fe/Pages/Others/ForgotPassword.html">Quên mật khẩu</a></h4>
+        <h4> <a href="ForgotPassword.html">Quên mật khẩu</a></h4>
     </div>
     <div>
-        <h4> <a href="/Fe/Pages/Others/registerUser.html">Tạo mới tài khoản</a></h4>
+        <h4> <a href="registerUser.html">Tạo mới tài khoản</a></h4>
     </div>
 </div>
 
@@ -110,7 +110,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
        if (result.data.jwt) {
             localStorage.setItem("token", result.data.jwt);
         }
-          window.location.href = "http://127.0.0.1:5500/Fe";
+          window.location.href = "./Profile.html";
     } else {
         console.log("ERROR:", result);
         const error = document.getElementById("error");

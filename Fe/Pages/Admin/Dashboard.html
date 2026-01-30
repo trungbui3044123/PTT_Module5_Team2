@@ -12,7 +12,7 @@
     <h1>Dashboard</h1>
 
    <h3> 
-    <a href="http://127.0.0.1:5500/Fe/Pages/Admin/registerStaff.html">Create new Staff
+    <a href="registerStaff.html">Create new Staff
 
    </a>
 </h3>
@@ -22,17 +22,17 @@
     const token = localStorage.getItem("token");
 
 if (!token) {
-    window.location.href = "http://127.0.0.1:5500/Fe/Pages/Admin/Login.html";
+    window.location.href = "./Login.html";
 }
 
 document.getElementById("Logout").addEventListener("click",function(e){
     e.preventDefault();
-    localStorage.removeItem("token"); window.location.href = "http://127.0.0.1:5500/Fe/Pages/Admin/Login.html";
+    localStorage.removeItem("token"); window.location.href = "./Login.html";
 })
 
 document.getElementById("userList").addEventListener("click",function(e){
     e.preventDefault();
-   window.location.href = "http://127.0.0.1:5500/Fe/Pages/Admin/userList.html";
+   window.location.href = "./userList.html";
 })
 
 </script>

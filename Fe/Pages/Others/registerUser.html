@@ -170,7 +170,7 @@ try { const res = await fetch("http://localhost:8080/api/public/register", {
         return; 
     } 
     console.log("RESULT:", result); 
-    if (res.ok) { window.location.href = "http://127.0.0.1:5500/Fe/Pages/Others/OthersLogin.html"; 
+    if (res.ok) { window.location.href = "./OthersLogin.html";
         
     } else { 
         console.log("ERROR:", result); document.getElementById("error").style.display = "block"; } 

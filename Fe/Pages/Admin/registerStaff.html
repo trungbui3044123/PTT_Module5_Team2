@@ -90,10 +90,10 @@ button:hover {
     </div>
 
     <!-- Password -->
-    <div>
-        <label for="password">Password *</label>
-        <input type="password" id="password" name="password" maxlength="255" required>
-    </div>
+<!--    <div>-->
+<!--        <label for="password">Password *</label>-->
+<!--        <input type="password" id="password" name="password" maxlength="255" required>-->
+<!--    </div>-->
 
     <!-- Email -->
     <div>
@@ -147,14 +147,14 @@ button:hover {
     const token = localStorage.getItem("token");
 
 if (!token) {
-    window.location.href = "/Fe/Pages/Admin/Login.html";
+    window.location.href = "./Login.html";
 }
 
 document.getElementById("registerForm").addEventListener("submit", async function(e) { 
     e.preventDefault(); 
     const data = { 
         username: document.getElementById("username").value, 
-        password: document.getElementById("password").value, 
+        // password: document.getElementById("password").value,
         email: document.getElementById("email").value, 
         name: document.getElementById("name").value, 
         age: document.getElementById("age").value, 
@@ -177,8 +177,8 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     const result = await res.json(); 
     
     console.log(result);
-    if(result.status===200){
-        window.location.href = "/Fe/Pages/Admin/Dashboard.html";// Path to index.html
+    if(result.status===201){
+        window.location.href = "./Dashboard.html";// Path to index.html
         
     }else{
         const error=document.getElementById("error");

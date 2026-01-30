@@ -107,7 +107,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
         console.log(result);
         console.log(result.data.jwt);
 
-        window.location.href = "http://127.0.0.1:5500/Fe/Pages/Admin/dashboard.html";
+        window.location.href = "./dashboard.html";
     } else {
         const error = document.getElementById("error");
         error.style.display = "block";
