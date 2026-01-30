@@ -5,5 +5,5 @@ public enum Role {
     STAFF,
     CUSTOMER,
     SUPPLIER,
-    USER,
+    USER
 }
