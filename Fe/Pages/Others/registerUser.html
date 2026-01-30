@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<head>
+    <!-- <link rel="stylesheet" href="/static/css/register.css"> -->
+    <meta charset="UTF-8">
+    <title>Register User</title>
+</head>
+<style>
+ /* Màu tổng thể */
+body {
+    background-color: #fff; /* 60% màu chủ đạo */
+    font-family: Arial, sans-serif;
+    display: flex;
+flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+    color: #333;
+}
+
+/* Container form */
+form {
+    border: #f1c40f; /* 30% màu phụ */
+    padding: 25px 35px;
+    border-radius: 12px;
+    width: 380px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+}
+
+/* Tiêu đề */
+h1 {
+    text-align: center;
+    color: #d35400; /* 10% màu nhấn */
+
+    font-size: 35px;
+}
+
+/* Label */
+label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+/* Input + Select */
+input, select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #f1c40f; /* màu chủ đạo */
+    border-radius: 6px;
+    margin-bottom: 15px;
+    background-color: #ffffff;
+    transition: 0.2s;
+}
+
+/* Hover + Focus */
+input:focus, select:focus {
+    border-color: #d35400; /* màu nhấn */
+    box-shadow: 0 0 5px rgba(211, 84, 0, 0.4);
+    outline: none;
+}
+
+/* Button */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #d35400; /* màu nhấn */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    background-color: #b84300;
+}
+
+</style>
+<body>
+<h1>Register User</h1>
+
+<form id="registerForm">
+
+    <!-- Username -->
+    <div>
+        <label for="username">Username *</label>
+        <input type="text" id="username" name="username" maxlength="100" required>
+    </div>
+
+    <!-- Password -->
+    <div>
+        <label for="password">Password *</label>
+        <input type="password" id="password" name="password" maxlength="255" required>
+    </div>
+
+    <!-- Email -->
+    <div>
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" maxlength="150" required>
+    </div>
+
+    <!-- Name -->
+    <div>
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" maxlength="150">
+    </div>
+
+    <!-- Age -->
+    <div>
+        <label for="age">Age</label>
+        <input type="number" id="age" name="age" min="0">
+    </div>
+
+    <!-- Phone -->
+    <div>
+        <label for="phone">Phone *</label>
+        <input type="text" id="phone" name="phone" maxlength="20" required>
+    </div>
+
+    <!-- Address -->
+    <div>
+        <label for="address">Address</label>
+        <input type="text" id="address" name="address" maxlength="255">
+    </div>
+
+    <!-- Role -->
+    <div>
+        <label for="role">Role *</label>
+        <select id="role" name="role" required>
+            <option value="" disabled selected>-- Select role --</option>
+            <option value="CUSTOMER">CUSTOMER</option>
+            <option value="SUPPLIER">SUPPLIER</option>            
+        </select>
+    </div>
+
+    <div>
+        <button type="submit">Register</button>
+            <h4 style="display: none;" id="error">Register fails</h4>
+    </div>
+
+</form>
+
+<script> 
+document.getElementById("registerForm").addEventListener("submit", async function(e) { 
+    e.preventDefault(); 
+    const data = { 
+        username: document.getElementById("username").value, 
+        password: document.getElementById("password").value, 
+        email: document.getElementById("email").value, 
+        name: document.getElementById("name").value, 
+        age: document.getElementById("age").value, 
+        phone: document.getElementById("phone").value, 
+        address: document.getElementById("address").value, 
+        role: document.getElementById("role").value
+     }; 
+try { const res = await fetch("http://localhost:8080/api/public/register", { 
+    method: "POST", 
+    headers: { "Content-Type": "application/json" }, 
+    body: JSON.stringify(data) }); 
+    
+    let result; 
+    try { 
+        result = await res.json(); 
+
+    } catch (jsonErr) { 
+        console.error("Không parse được JSON:", jsonErr); 
+        console.log("Response text:", await res.text()); 
+        return; 
+    } 
+    console.log("RESULT:", result); 
+    if (res.ok) { window.location.href = "http://127.0.0.1:5500/Fe/Pages/Others/OthersLogin.html"; 
+        
+    } else { 
+        console.log("ERROR:", result); document.getElementById("error").style.display = "block"; } 
+    } catch (err) { console.error("FETCH ERROR:", err); }
+}); 
+    
+    
+    </script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+</head>
+
+    <div><button id="Logout">Logout</button></div>
+
+    <div><br><br><button id="userList">List users</button></div>
+    <h1>Dashboard</h1>
+
+   <h3> 
+    <a href="http://127.0.0.1:5500/Fe/Pages/Admin/registerStaff.html">Create new Staff
+
+   </a>
+</h3>
+
+
+<script>
+    const token = localStorage.getItem("token");
+
+if (!token) {
+    window.location.href = "http://127.0.0.1:5500/Fe/Pages/Admin/Login.html";
+}
+
+document.getElementById("Logout").addEventListener("click",function(e){
+    e.preventDefault();
+    localStorage.removeItem("token"); window.location.href = "http://127.0.0.1:5500/Fe/Pages/Admin/Login.html";
+})
+
+document.getElementById("userList").addEventListener("click",function(e){
+    e.preventDefault();
+   window.location.href = "http://127.0.0.1:5500/Fe/Pages/Admin/userList.html";
+})
+
+</script>
+</body>
+</html>

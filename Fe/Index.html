@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+</head>
+<body>
+     <div><button id="Logout">Logout</button></div>
+     <div><br><br><button id="EditPass">Change password</button></div>
+     <div><br><br><button id="profile">Profile</button></div>
+    <h1>Home page</h1>
+
+
+
+
+    <script>
+            const token = localStorage.getItem("token");
+
+if (!token) {
+    window.location.href = "http://127.0.0.1:5500/Fe/Pages/Others/OthersLogin.html";
+}
+
+document.getElementById("Logout").addEventListener("click",function(e){
+    e.preventDefault();
+    localStorage.removeItem("token"); window.location.href = "http://127.0.0.1:5500/Fe/Pages/Others/OthersLogin.html";
+})
+
+document.getElementById("EditPass").addEventListener("click",function(e){
+    e.preventDefault();
+    window.location.href = "http://127.0.0.1:5500/Fe/Pages/Others/Change-password.html";
+})
+document.getElementById("profile").addEventListener("click",function(e){
+    e.preventDefault();
+    window.location.href = "http://127.0.0.1:5500/Fe/Pages/Others/Profile.html";
+})
+
+    </script>
+</body>
+</html>
