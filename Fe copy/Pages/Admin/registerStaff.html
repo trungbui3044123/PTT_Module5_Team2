@@ -7,18 +7,50 @@
 <style>
  /* Màu tổng thể */
 body {
-    background-color: #fff; /* 60% màu chủ đạo */
+ font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+}
+/* home back */
+#homePage {
+    color: #2c3e50;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: medium;
+    font-weight: bold;
+    transition: 0.25s;
+    margin-bottom: 10px;
+    width: 150px;
+    
+}
+
+#homePage:hover {
+    background: #2c3e50;
+    transform: translateY(-2px);
+     color: #fff;
+}
+
+#homePage:active {
+    transform: translateY(0);
+}
+
+.main{
+
     font-family: Arial, sans-serif;
     display: flex;
-flex-direction: column;
+    flex-direction: column;
     align-items: center;
-    padding-top: 10px;
+    padding: 10px;
     color: #333;
+    border-radius: 20px;
 }
 
 /* Container form */
 form {
-    border: #f1c40f; /* 30% màu phụ */
+    border: #2c3e50; /* 30% màu phụ */
+     background: #fff;
     padding: 25px 35px;
     border-radius: 12px;
     width: 380px;
@@ -29,7 +61,7 @@ form {
 /* Tiêu đề */
 h1 {
     text-align: center;
-    color: #d35400; /* 10% màu nhấn */
+    color: #2c3e50; /* 10% màu nhấn */
 
     font-size: 35px;
 }
@@ -46,7 +78,7 @@ label {
 input, select {
     width: 100%;
     padding: 10px;
-    border: 2px solid #f1c40f; /* màu chủ đạo */
+    border: 2px solid #2c3e50; /* màu chủ đạo */
     border-radius: 6px;
     margin-bottom: 15px;
     background-color: #ffffff;
@@ -55,7 +87,7 @@ input, select {
 
 /* Hover + Focus */
 input:focus, select:focus {
-    border-color: #d35400; /* màu nhấn */
+    border-color: #3498db; /* màu nhấn */
     box-shadow: 0 0 5px rgba(211, 84, 0, 0.4);
     outline: none;
 }
@@ -64,7 +96,7 @@ input:focus, select:focus {
 button {
     width: 100%;
     padding: 12px;
-    background-color: #d35400; /* màu nhấn */
+    background-color: #3498db; /* màu nhấn */
     color: white;
     border: none;
     border-radius: 6px;
@@ -74,13 +106,23 @@ button {
 }
 
 button:hover {
-    background-color: #b84300;
+    background-color: #3498db;
 }
-
+#homePage{
+   padding: 5px 10px; background: none; border: none; color: #333;
+}
+#error {
+            display: none;
+            color: red;
+            margin-bottom: 10px;
+            text-align: center;
+        }
 </style>
 <body>
+<div><button id="homePage">Back Home page</button></div>
 <h1>Register Staffs</h1>
-
+<div class="main">
+ <div id="error"></div>
 <form id="registerForm">
 
     <!-- Staff -->
@@ -142,7 +184,7 @@ button:hover {
     </div>
 
 </form>
-
+</div>
 <script> 
     const token = localStorage.getItem("token");
 
@@ -164,33 +206,40 @@ document.getElementById("registerForm").addEventListener("submit", async functio
         role: document.getElementById("role").value
      }; 
     if ( confirm(`Create user ${data.username}?`)) { 
-    const res = await fetch("http://localhost:8080/api/admin/users/staff",    {
+    fetch("http://localhost:8080/api/admin/users/staff",    {
                 method: "POST", 
                 headers: { 
                     "Content-Type": "application/json",
                     "Authorization": "Bearer " + token
                 }, 
-            body: JSON.stringify(data) }); 
-           
-
-
-    const result = await res.json(); 
+            body: JSON.stringify(data) }
+    )
+    .then(res=>res.json()) 
+    .then(res=>{
+    console.log(res);
     
-    console.log(result);
-    if(result.status===200){
+    if(res.status===201){
         window.location.href = "/Fe/Pages/Admin/Dashboard.html";// Path to index.html
         
     }else{
         const error=document.getElementById("error");
         error.style.display = "block";
+   
+        error.innerHTML=res.message;
+
         
-    } 
- }else{
+    }
+    })
+ 
+ }else{//day la end
             location.reload(); // Người dùng bấm Cancel
             }
 
 }); 
-    
+document.getElementById("homePage").addEventListener("click",function(e){
+    e.preventDefault();
+   window.location.href = "/Fe/Pages/Admin/Dashboard.html";
+})    
     
     </script>
 </body>
