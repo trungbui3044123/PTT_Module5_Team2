@@ -2,6 +2,9 @@ package com.module5.team2.security.jwt;
 
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.enums.Status;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,13 +12,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-
 public class CustomUserDetails implements UserDetails {
 
     private final UserEntity user;
-
+   
     public CustomUserDetails(UserEntity user) {
         this.user = user;
+      
     }
 
     @Override
