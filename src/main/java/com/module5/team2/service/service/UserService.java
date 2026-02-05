@@ -8,6 +8,7 @@ import com.module5.team2.entity.UserEntity;
 import com.module5.team2.enums.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -23,7 +24,9 @@ public interface UserService {
 
     void forgotPassword(String email);
 
-  
+   
+    UserEntity findById(Integer userId);
+
     void resetStaffPassword(Integer staffId);
 
     UserEntity register(RegisterRequest request);

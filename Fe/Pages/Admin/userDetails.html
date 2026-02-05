@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Details User</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+        color: #2c3e50; /* 10% màu nhấn */
+
+        font-size: 35px;
+      }
+
+      .main {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+        color: #333;
+        border-radius: 20px;
+      }
+
+      /* home btn */
+      #listUser {
+        color: #2c3e50;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: medium;
+        font-weight: bold;
+        transition: 0.25s;
+        margin-bottom: 10px;
+      }
+
+      #listUser:hover {
+        background: #2c3e50;
+        transform: translateY(-2px);
+        color: #fff;
+      }
+
+      #listUser:active {
+        transform: translateY(0);
+      }
+      /* Container form */
+      #detailsForm {
+        display: flex;
+        flex-direction: column;
+        border: #2c3e50; /* 30% màu phụ */
+        background: #fff;
+        padding: 25px 35px;
+        border-radius: 12px;
+        width: 90%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      /* Container 2 cột */
+      #contentsForm {
+        display: flex;
+        justify-content: space-between;
+        gap: 40px; /* khoảng cách giữa 2 cột */
+        margin-bottom: 20px;
+      }
+
+      /* Mỗi cột chiếm 50% */
+      .left-form,
+      .rigth-form {
+        width: 50%;
+      }
+
+      /* Mỗi nhóm label + input */
+      .left-form div,
+      .rigth-form div {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 16px; /* khoảng cách giữa các dòng */
+      }
+
+      /* Label */
+      #contentsForm label {
+        font-weight: 600;
+        margin-bottom: 6px; /* khoảng cách giữa label và input */
+      }
+
+      /* Input */
+      #contentsForm input {
+        padding: 8px 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      /* Nút submit */
+      #detailsForm button {
+        padding: 10px 20px;
+        background: #2c3e50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      #detailsForm button:hover {
+        background: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div><button id="listUser">List Users</button></div>
+    <h1 id="title"></h1>
+    <div class="main">
+      <div id="error"></div>
+      <form id="detailsForm">
+
+          <div id="contentsForm">
+            <div class="left-form">
+              <!-- Staff -->
+              <div>
+                <label for="username">Staff name *</label>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  maxlength="100"
+                  required disabled
+                />
+              </div>
+              <!-- Email -->
+              <div>
+                <label for="email">Email *</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  maxlength="150"
+                  required disabled
+                />
+              </div>
+
+              <!-- Name -->
+              <div>
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" maxlength="150" disabled/>
+              </div>
+
+              <!-- Age -->
+              <div>
+                <label for="age">Age</label>
+                <input type="number" id="age" name="age" min="0" disabled/>
+              </div>
+            </div>
+            <div class="rigth-form">
+              <!-- Phone -->
+              <div>
+                <label for="phone">Phone *</label>
+                <input
+                  type="text"
+                  id="phone"
+                  name="phone"
+                  maxlength="20"
+                  required disabled
+                />
+              </div>
+
+              <!-- Address -->
+              <div>
+                <label for="address">Address</label>
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  maxlength="255" disabled
+                />
+              </div>
+              <!-- Salary -->
+              <div>
+                <label for="Salary">Salary*</label>
+                <input
+                  type="number"
+                  id="salary"
+                  name="salary"
+                  min="1"
+                  max="99999999"
+                  required disabled
+                />
+              </div>
+              <!-- Role -->
+              <div class="form-row">
+                <div>
+                  <label for="role">Role</label>
+                  <input type="text" id="role" name="role" disabled/>
+                </div>
+                <div>
+                  <label for="status">Status</label>
+                  <input type="text" id="status" name="status" disabled/>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <button
+              type="button"
+              id="editDetailsBtn"
+              onclick="toEditForm(event)"
+            >
+              Edit
+            </button>
+
+            <h4 style="display: none" id="error">Register fails</h4>
+          </div>
+
+      </form>
+    </div>
+    <script>
+      // check admin role only
+      const token = sessionStorage.getItem("token");
+      if (!token) {
+        window.location.href = "/Fe/Pages/Admin/Login.html";
+      }
+      // get ID
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get("id");
+      console.log(id); // ví dụ: 123
+      //   get DOM
+      const editDetailsBtn = document.getElementById("editDetailsBtn");
+      const contentsForm = document.getElementById("contentsForm");
+      let contents = {
+        username: document.getElementById("username"),
+        email: document.getElementById("email"),
+        phone: document.getElementById("phone"),
+        name: document.getElementById("name"),
+        age: document.getElementById("age"),
+        role: document.getElementById("role"),
+        address: document.getElementById("address"),
+        status: document.getElementById("status"),
+        salary: document.getElementById("salary"),
+      };
+      const title = document.getElementById("title");
+      // Gen details data
+      fetch(`http://localhost:8080/api/admin/users/${id}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          if (res.status !== 200) {
+            contentsForm.innerHTML = "<h3>Not found data</h3>";
+          } else {
+            const details = res.data;
+            title.innerHTML = `Details  information of ${details.username}`;
+            contents.username.value = details.username;
+            contents.email.value = details.email;
+            contents.phone.value = details.phone;
+            contents.name.value = details.name;
+            contents.age.value = details.age;
+            contents.role.value = details.role;
+            contents.address.value = details.address;
+            contents.status.value = details.status;
+            contents.salary.value = details.salary;
+          }
+        });
+      // editForm
+      function toEditForm(e) {
+
+        if (editDetailsBtn.textContent === "Edit") { 
+            console.log(contents)
+           
+            editDetailsBtn.textContent = "Save"; 
+        } else { 
+            
+             editDetailsBtn.textContent = "Edit";}
+      }
+
+      // backhome page
+      document
+        .getElementById("listUser")
+        .addEventListener("click", function (e) {
+          e.preventDefault();
+          window.location.href = "/Fe/Pages/Admin/userList.html";
+        });
+      //
+    </script>
+  </body>
+</html>

@@ -23,6 +23,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequestMapping("/api")
@@ -90,7 +93,7 @@ public class UserController {
     /**
      * LOGIN DÀNH RIÊNG CHO ADMIN
      */
-    @PostMapping("/admin/login")
+    @PostMapping("/admin/login") //done
     public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(@Valid @RequestBody LoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
@@ -124,7 +127,7 @@ public class UserController {
      * ADMIN tạo STAFF
      */
 
-    @PostMapping("/admin/users/staff")
+    @PostMapping("/admin/users/staff") //done
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<UserProfileResponse>> createStaff(
             @Valid
@@ -166,30 +169,8 @@ public class UserController {
         );
     }
 
-//    @GetMapping("/admin/users")
-//    @PreAuthorize("hasRole('ADMIN')")
-//    public ResponseEntity<?> searchUsers (
-//            @RequestParam(required = false) String keyword) {
-//
-//        return ResponseEntity.ok(
-//                userService.searchUsers(keyword)
-//                        .stream()
-//                        .map(user -> UserProfileResponse.builder()
-//                                .id(user.getId())
-//                                .username(user.getUsername())
-//                                .email(user.getEmail())
-//                                .phone(user.getPhone())
-//                                .name(user.getName())
-//                                .role(user.getRole().name())
-//                                .status(user.getStatus().name())
-//                                .salary(user.getSalary())
-//                                .build()
-//                        )
-//                        .toList()
-//        );
-//    }
 
-    @GetMapping("/admin/users")
+    @GetMapping("/admin/users")//done
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> searchUsers(
             @RequestParam(required = false) String keyword,
@@ -218,6 +199,96 @@ public class UserController {
                         .status(200)
                         .message("Lấy danh sách người dùng thành công")
                         .data(responsePage)
+                        .build()
+        );
+    }
+
+    @GetMapping("/admin/users/{id}")//done
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Object>> detailsUser( @PathVariable Integer id) {
+       UserEntity user = userService.findById(id);
+       UserProfileResponse response= UserProfileResponse.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .phone(user.getPhone())
+                        .name(user.getName())
+                        .age(user.getAge())
+                        .role(user.getRole().name())
+                        .address(user.getAddress())
+                        .status(user.getStatus().name())
+                        .salary(user.getSalary())
+                        .build();
+         return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(200)
+                        .message("Lấy danh sách người dùng thành công")
+                        .data(response)
+                        .build()
+        );
+    }
+    
+
+    /**
+     * UPDATE USER
+     */
+    @PutMapping("/admin/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<UserProfileResponse>> updateUser(
+            @PathVariable Integer id,
+            @RequestBody UpdateUserRequest request) {
+        UserEntity updatedUser = userService.updateUser(id, request);
+
+        UserProfileResponse data = UserProfileResponse.builder()
+                .id(updatedUser.getId())
+                .username(updatedUser.getUsername())
+                .email(updatedUser.getEmail())
+                .phone(updatedUser.getPhone())
+                .name(updatedUser.getName())
+                .age(updatedUser.getAge())
+                .address(updatedUser.getAddress())
+                .role(updatedUser.getRole().name())
+                .status(updatedUser.getStatus().name())
+                .salary(updatedUser.getSalary())
+                .build();
+
+        return ResponseEntity.ok(
+                ApiResponse.<UserProfileResponse>builder()
+                        .status(200)
+                        .message("Cập nhật người dùng thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+
+    /**
+     * CHANGE STATUS (Block/Active user)
+     */
+    @PatchMapping("/admin/users/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> changeStatus(
+            @PathVariable Integer id,
+            @RequestParam Status status) {
+        userService.changeStatus(id, status);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .status(200)
+                        .message("Cập nhật trạng thái thành công")
+                        .build()
+        );
+    }
+
+    /**
+     * DELETE USER
+     */
+    @DeleteMapping("/admin/users/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Integer id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .status(200)
+                        .message("Xóa người dùng thành công")
                         .build()
         );
     }
@@ -282,70 +353,6 @@ public class UserController {
                         .status(200)
                         .message("Cập nhật thông tin cá nhân thành công")
                         .data(data)
-                        .build()
-        );
-    }
-
-    /**
-     * UPDATE USER
-     */
-    @PutMapping("/admin/users/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<UserProfileResponse>> updateUser(
-            @PathVariable Integer id,
-            @RequestBody UpdateUserRequest request) {
-        UserEntity updatedUser = userService.updateUser(id, request);
-
-        UserProfileResponse data = UserProfileResponse.builder()
-                .id(updatedUser.getId())
-                .username(updatedUser.getUsername())
-                .email(updatedUser.getEmail())
-                .phone(updatedUser.getPhone())
-                .name(updatedUser.getName())
-                .age(updatedUser.getAge())
-                .address(updatedUser.getAddress())
-                .role(updatedUser.getRole().name())
-                .status(updatedUser.getStatus().name())
-                .salary(updatedUser.getSalary())
-                .build();
-
-        return ResponseEntity.ok(
-                ApiResponse.<UserProfileResponse>builder()
-                        .status(200)
-                        .message("Cập nhật người dùng thành công")
-                        .data(data)
-                        .build()
-        );
-    }
-
-    /**
-     * CHANGE STATUS (Block/Active user)
-     */
-    @PatchMapping("/admin/users/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> changeStatus(
-            @PathVariable Integer id,
-            @RequestParam Status status) {
-        userService.changeStatus(id, status);
-        return ResponseEntity.ok(
-                ApiResponse.<Void>builder()
-                        .status(200)
-                        .message("Cập nhật trạng thái thành công")
-                        .build()
-        );
-    }
-
-    /**
-     * DELETE USER
-     */
-    @DeleteMapping("/admin/users/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Integer id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok(
-                ApiResponse.<Void>builder()
-                        .status(200)
-                        .message("Xóa người dùng thành công")
                         .build()
         );
     }

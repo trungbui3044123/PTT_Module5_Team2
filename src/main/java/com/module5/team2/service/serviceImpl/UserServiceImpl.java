@@ -200,21 +200,13 @@ public class UserServiceImpl implements UserService {
                         new RuntimeException("Không tìm thấy user"));
     }
 
-//    @Override
-//    @Transactional(readOnly = true)
-//    public List<UserEntity> searchUsers(String keyword) {
-//        if (keyword == null || keyword.trim().isEmpty()) {
-//            // nếu không nhập gì => trả về tất cả
-//            return userRepository.findAll();
-//        }
-//
-//        return userRepository
-//                .findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
-//                        keyword,
-//                        keyword
-//                );
-//    }
 
+    @Override
+    public UserEntity findById(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("Không tìm thấy user"));
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -245,4 +237,6 @@ public class UserServiceImpl implements UserService {
             System.out.println(">>> Đã khởi tạo tài khoản Admin mặc định: admin/admin123");
         }
     }
+
+
 }

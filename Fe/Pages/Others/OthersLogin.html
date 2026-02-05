@@ -91,32 +91,32 @@
    
 document.getElementById("loginForm").addEventListener("submit", async function(e) {
     e.preventDefault();
-   localStorage.removeItem("token");
+   sessionStorage.removeItem("token");
     const data = {
         username: document.getElementById("username").value,
         password: document.getElementById("password").value
     };
 
-    const res = await fetch("http://localhost:8080/api/public/login", {
+    fetch("http://localhost:8080/api/public/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
-    });
-
-    const result = await res.json();
-
-    if (res.status === 200) {
-        // Lưu token nếu BE trả về
-       if (result.data.jwt) {
-            localStorage.setItem("token", result.data.jwt);
-        }
-          window.location.href = "http://127.0.0.1:5500/Fe";
+    })
+    .then(res=>res.json())
+    .then(res=>{
+        if (res.status === 200&&result.data.jwt) {
+        
+        localStorage.setItem("token", result.data.jwt);
+        window.location.href = "/Fe";
     } else {
         console.log("ERROR:", result);
         const error = document.getElementById("error");
         error.style.display = "block";
         error.innerText =`${result.message || ""} ${result.data || ""}`.trim() || "Đăng nhập thất bại";
     }
+    })
+
+    
 });
 </script>
 

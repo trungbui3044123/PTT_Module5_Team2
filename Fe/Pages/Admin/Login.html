@@ -82,8 +82,9 @@
 </div>
 
 <script>
+   sessionStorage.removeItem("token");
    
-document.getElementById("loginForm").addEventListener("submit", async function(e) {
+   document.getElementById("loginForm").addEventListener("submit", async function(e) {
     e.preventDefault();
 
     const data = {
@@ -103,7 +104,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
     if (resp.status === 200) {
         // Lưu token nếu BE trả về
         if (resp.data.jwt) {
-            localStorage.setItem("token", resp.data.jwt);
+            sessionStorage.setItem("token", resp.data.jwt);
         }
      window.location.href = "/Fe/Pages/Admin/dashboard.html";
     }else{
