@@ -190,7 +190,7 @@
     </div>
     <script>
       // check admin role only
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
 
       if (!token) {
         window.location.href =
@@ -232,7 +232,9 @@
           return;
         }
         users.forEach((u) => {
-          tbody.innerHTML += ` <tr> <td>${u.id}</td> <td>${u.username}</td> <td>${u.email}</td> <td>${u.phone}</td> <td>${u.name}</td> <td>${u.age}</td> <td>${u.address}</td> <td>${u.role}</td> <td>${u.status}</td> <td>${u.role === "STAFF" ? u.salary : "-"}</td> </tr> `;
+          tbody.innerHTML += ` <tr onclick="window.location.href='/Fe/Pages/Admin/userDetails.html?id=${u.id}'" style="cursor:pointer;"> 
+            <td>${u.id}</td> <td>${u.username}</td> <td>${u.email}</td> <td>${u.phone}</td> <td>${u.name}</td> <td>${u.age}</td> <td>${u.address}</td> <td>${u.role}</td> <td>${u.status}</td> <td>${u.role === "STAFF" ? u.salary : "-"}</td> 
+            </tr> `;
         });
       }
       //
