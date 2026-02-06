@@ -35,10 +35,24 @@ public class UserServiceImpl implements UserService {
     public UserEntity updateUser(Integer userId, UpdateUserRequest request) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User không tồn tại"));
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
         user.setName(request.getName());
         user.setAge(request.getAge());
-        user.setPhone(request.getPhone());
         user.setAddress(request.getAddress());
+        user.setStatus(request.getStatus());
+        user.setSalary(request.getSalary());
+//  UserEntity user = UserEntity.builder()
+//                 .username(request.getUsername())
+//                 .password(passwordEncoder.encode(request.getPassword()))
+//                 .email(request.getEmail())
+//                 .phone(request.getPhone())
+//                 .name(request.getName())
+//                 .role(request.getRole())
+//                 .status(Status.ACTIVE)
+//                 .build();
+
         return userRepository.save(user);
     }
 
