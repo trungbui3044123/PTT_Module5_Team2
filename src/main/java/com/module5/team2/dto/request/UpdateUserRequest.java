@@ -5,6 +5,7 @@ import com.module5.team2.enums.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -59,10 +60,9 @@ public class UpdateUserRequest {
     @Column(nullable = false, length = 20)
     private Status status;
  
-    @Pattern(
-           regexp = "^[1-9][0-9]{0,7}$",
-    message = "Lương không hợp lệ"
-    )
-    @Min(value = 1000, message = "Lương phải lớn hơn 1000")
-    private Double salary;
+   @Min(value = 1000, message = "Lương phải lớn hơn 1000")
+@Digits(integer = 8, fraction = 0, message = "Lương không hợp lệ")
+private Double salary;
+
+
 }

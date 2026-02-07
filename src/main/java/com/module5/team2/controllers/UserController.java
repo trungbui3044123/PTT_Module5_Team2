@@ -36,7 +36,7 @@ public class UserController {
     /**
      * CUSTOMER & SUPPLIER đăng ký
      */
-    @PostMapping("/public/register")
+    @PostMapping("/public/register")//done
     public ResponseEntity<ApiResponse<UserProfileResponse>> register(@Valid @RequestBody RegisterRequest request) {
         UserEntity user = userService.register(request);
 
@@ -295,7 +295,7 @@ public class UserController {
     /**
      * PROFILE – thông tin user đang đăng nhập
      */
-    @GetMapping("/user/profile")
+    @GetMapping("/user/profile")//DONE
     public ResponseEntity<ApiResponse<UserProfileResponse>> profile(
             Authentication authentication) {
         CustomUserDetails userDetails =
@@ -324,7 +324,7 @@ public class UserController {
         );
     }
 
-    @PutMapping("/user/profile")
+    @PutMapping("/user/profile")//done
     public ResponseEntity<ApiResponse<UserProfileResponse>> updateOwnProfile(
             Authentication authentication,
             @Valid @RequestBody UpdateUserRequest request) {
@@ -359,7 +359,7 @@ public class UserController {
     /**
      * CHANGE PASSWORD
      */
-    @PutMapping("/user/change-password")
+    @PutMapping("/user/change-password")//done
     public ResponseEntity<ApiResponse<Void>> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         userService.changePassword(
@@ -377,7 +377,7 @@ public class UserController {
     /**
      * FORGOT PASSWORD
      */
-    @PostMapping("/public/forgot-password")
+    @PostMapping("/public/forgot-password")//done
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         userService.forgotPassword(request.getEmail());
         return ResponseEntity.ok(
