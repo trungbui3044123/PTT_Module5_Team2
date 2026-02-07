@@ -23,8 +23,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
@@ -38,7 +36,7 @@ public class UserController {
     /**
      * CUSTOMER & SUPPLIER đăng ký
      */
-    @PostMapping("/public/register")
+    @PostMapping("/public/register")//done
     public ResponseEntity<ApiResponse<UserProfileResponse>> register(@Valid @RequestBody RegisterRequest request) {
         UserEntity user = userService.register(request);
 
@@ -64,7 +62,7 @@ public class UserController {
     /**
      * Login dùng chung cho TẤT CẢ role
      */
-    @PostMapping("/public/login")
+    @PostMapping("/public/login")//done
     public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
 
         Authentication authentication = authenticationManager.authenticate(
@@ -78,7 +76,8 @@ public class UserController {
         LoginResponse data = new LoginResponse(
                 jwt,
                 userDetails.getUsername(),
-                userDetails.getUserEntity().getRole().name()
+                userDetails.getUserEntity().getRole().name(),
+                userDetails.isEnabled()
         );
 
         return ResponseEntity.ok(
@@ -91,37 +90,38 @@ public class UserController {
     }
 
     /**
-     * LOGIN DÀNH RIÊNG CHO ADMIN
+     * LOGIN DÀNH RIÊNG CHO ADMIN-> Ko dung nua
      */
-    @PostMapping("/admin/login") //done
-    public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(@Valid @RequestBody LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+//     @PostMapping("/admin/login") //done
+//     public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(@Valid @RequestBody LoginRequest request) {
+//         Authentication authentication = authenticationManager.authenticate(
+//                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+//         );
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+//         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        // Kiểm tra có là Admin không
-        if (userDetails.getUserEntity().getRole() != Role.ADMIN) {
-            throw new BusinessException("Chỉ Admin mới được đăng nhập");
-        }
+//         // Kiểm tra có là Admin không
+//         if (userDetails.getUserEntity().getRole() != Role.ADMIN) {
+//             throw new BusinessException("Chỉ Admin mới được đăng nhập");
+//         }
 
-        String jwt = jwtTokenProvider.generateToken(authentication);
+//         String jwt = jwtTokenProvider.generateToken(authentication);
 
-        LoginResponse data = new LoginResponse(
-                jwt,
-                userDetails.getUsername(),
-                userDetails.getUserEntity().getRole().name()
-        );
+//         LoginResponse data = new LoginResponse(
+//                 jwt,
+//                 userDetails.getUsername(),
+//                 userDetails.getUserEntity().getRole().name(),
+//                 userDetails.isEnabled()
+//         );
 
-        return ResponseEntity.ok(
-                ApiResponse.<LoginResponse>builder()
-                        .status(200)
-                        .message("Admin đăng nhập thành công")
-                        .data(data)
-                        .build()
-        );
-    }
+//         return ResponseEntity.ok(
+//                 ApiResponse.<LoginResponse>builder()
+//                         .status(200)
+//                         .message("Admin đăng nhập thành công")
+//                         .data(data)
+//                         .build()
+//         );
+//     }
 
     /**
      * ADMIN tạo STAFF
@@ -156,9 +156,10 @@ public class UserController {
         );
     }
 
-    @PutMapping("/admin/users/staff/{id}/reset-password")
+    @PutMapping("/admin/users/staff/{id}/reset-password")//done
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> resetStaffPassword(@PathVariable Integer id) {
+        
         userService.resetStaffPassword(id);
 
         return ResponseEntity.ok(
@@ -232,7 +233,7 @@ public class UserController {
     /**
      * UPDATE USER
      */
-    @PutMapping("/admin/users/{id}")
+    @PutMapping("/admin/users/{id}")//done
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<UserProfileResponse>> updateUser(
             @PathVariable Integer id,
@@ -240,14 +241,12 @@ public class UserController {
         UserEntity updatedUser = userService.updateUser(id, request);
 
         UserProfileResponse data = UserProfileResponse.builder()
-                .id(updatedUser.getId())
                 .username(updatedUser.getUsername())
                 .email(updatedUser.getEmail())
                 .phone(updatedUser.getPhone())
                 .name(updatedUser.getName())
                 .age(updatedUser.getAge())
                 .address(updatedUser.getAddress())
-                .role(updatedUser.getRole().name())
                 .status(updatedUser.getStatus().name())
                 .salary(updatedUser.getSalary())
                 .build();
@@ -264,24 +263,24 @@ public class UserController {
     /**
      * CHANGE STATUS (Block/Active user)
      */
-    @PatchMapping("/admin/users/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> changeStatus(
-            @PathVariable Integer id,
-            @RequestParam Status status) {
-        userService.changeStatus(id, status);
-        return ResponseEntity.ok(
-                ApiResponse.<Void>builder()
-                        .status(200)
-                        .message("Cập nhật trạng thái thành công")
-                        .build()
-        );
-    }
+//     @PatchMapping("/admin/users/{id}/status")
+//     @PreAuthorize("hasRole('ADMIN')")
+//     public ResponseEntity<ApiResponse<Void>> changeStatus(
+//             @PathVariable Integer id,
+//             @RequestParam Status status) {
+//         userService.changeStatus(id, status);
+//         return ResponseEntity.ok(
+//                 ApiResponse.<Void>builder()
+//                         .status(200)
+//                         .message("Cập nhật trạng thái thành công")
+//                         .build()
+//         );
+//     }
 
     /**
      * DELETE USER
      */
-    @DeleteMapping("/admin/users/{id}")
+    @DeleteMapping("/admin/users/{id}")//done
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);
@@ -296,7 +295,7 @@ public class UserController {
     /**
      * PROFILE – thông tin user đang đăng nhập
      */
-    @GetMapping("/user/profile")
+    @GetMapping("/user/profile")//DONE
     public ResponseEntity<ApiResponse<UserProfileResponse>> profile(
             Authentication authentication) {
         CustomUserDetails userDetails =
@@ -325,7 +324,7 @@ public class UserController {
         );
     }
 
-    @PutMapping("/user/profile")
+    @PutMapping("/user/profile")//done
     public ResponseEntity<ApiResponse<UserProfileResponse>> updateOwnProfile(
             Authentication authentication,
             @Valid @RequestBody UpdateUserRequest request) {
@@ -360,7 +359,7 @@ public class UserController {
     /**
      * CHANGE PASSWORD
      */
-    @PutMapping("/user/change-password")
+    @PutMapping("/user/change-password")//done
     public ResponseEntity<ApiResponse<Void>> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
         userService.changePassword(
@@ -378,7 +377,7 @@ public class UserController {
     /**
      * FORGOT PASSWORD
      */
-    @PostMapping("/public/forgot-password")
+    @PostMapping("/public/forgot-password")//done
     public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         userService.forgotPassword(request.getEmail());
         return ResponseEntity.ok(

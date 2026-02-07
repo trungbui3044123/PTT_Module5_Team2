@@ -11,4 +11,6 @@ public class LoginResponse {
     private String jwt;
     private String username;
     private String role;
+    private Boolean isEnable;
+    public boolean isEnabled() { return isEnable; }
 }

@@ -1,201 +1,100 @@
 <!doctype html>
-<html lang="vi">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Danh sách người dùng</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
-        padding: 20px;
-      }
-      /* home back */
-      #homePage {
-    color: #2c3e50;
-    border: none;
-    padding: 10px 18px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: medium;
-    font-weight: bold;
-    transition: 0.25s;
-    margin-bottom: 10px;
-
-}
-
-#homePage:hover {
-    background: #2c3e50;
-    transform: translateY(-2px);
-     color: #fff;
-}
-
-#homePage:active {
-    transform: translateY(0);
-}
-
-      /* Search */
-.searchDiv {
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-
-}
-
-.searchForm {
-    display: flex;
-    gap: 50px; /* khoảng cách giữa input và nút */
-    align-items: center;
-    background: #ffffff;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.searchForm input[type="text"] {
-    padding: 10px 14px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    width: 220px;
-    transition: 0.2s;
-}
-
-.searchForm input[type="text"]:focus {
-    border-color: #3498db;
-    outline: none;
-    box-shadow: 0 0 4px rgba(52,152,219,0.4);
-}
-
-.searchForm input[type="submit"] {
-    padding: 10px 16px;
-    background: #3498db;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s;
-    font-weight: bold;
-}
-
-.searchForm input[type="submit"]:hover {
-    background: #2980b9;
-}
-/* Create staff */
-.addStaffDiv{
-   display: flex;
-    align-items: center;
-    padding: 10px;
-    border-radius: 8px;
-    
-}
-.createStaff{
-    padding: 10px 16px;
-    background: #2c3e50;
-    color: white;
-    border: none;
-    font-size: large;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: 0.2s;
-    font-weight: bold;
-}
-.createStaff:hover{
-    background: #2980b9;
-    transform: translateY(-2px);
-     color: #fff;
-    
-}
-/* content */
-     .title {
-        text-align: center;
-        margin-bottom: 20px;
-      }
-
-      #userTable {
-        width: 100%;
-        border-collapse: collapse;
-        background: white;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      }
-
-      #userTable th,
-      #userTable td {
-        padding: 10px;
-        border: 1px solid #ddd;
-        text-align: left;
-      }
-
-      #userTable th {
-        background: #2c3e50;
-        color: white;
-      }
-
-      #userTable tr:nth-child(even) {
-        background: #f2f2f2;
-      }
-
-      #userTable tr:hover {
-        background: #e6f3ff;
-      }
-      #pagination button {
-        margin: 4px;
-        padding: 6px 12px;
-        border: none;
-        background: #ddd;
-        cursor: pointer;
-        border-radius: 4px;
-      }
-
-      #pagination .active-page {
-        background: #3498db;
-        color: white;
-      }
-    </style>
+    <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+   
   </head>
   <body>
-    <div><button id="homePage">Back Home page</button></div>
-    <div class="searchDiv">
-      <form onsubmit="searchUsers(event)" class="searchForm" >
-        <div>
-          <input type="text" name="name" placeholder="Search name" id="searchName" />
-        </div>
-        <div>
-          <input type="submit" value="Search Users" />
-        </div>
-      </form>
-      <div class="addStaffDiv"><button class="createStaff" id="createStaff">Create New Stafff</button></div>
-    </div>
-    <div class="content">
-      <h2 class="title">Danh sách người dùng</h2>
+    <main>
+     <div class="container py-4">
 
-      <table id="userTable">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Name</th>
-            <th>Age</th>
-            <th>Address</th>
-            <th>Role</th>
-            <th>Status</th>
-            <th>Salary</th>
-          </tr>
-        </thead>
-        <tbody id="userBody">
-          <!-- JS sẽ render vào đây -->
-        </tbody>
-      </table>
-      <div id="pagination"></div>
+    <!-- Username top-right -->
+    <div class="d-flex justify-content-end mb-3">
+        <p class="fw-semibold text-secondary mb-0" id="username"></p>
     </div>
+
+    <!-- Back button -->
+    <div class="mb-3">
+        <button id="homePage" class="btn btn-secondary">Back Home Page</button>
+    </div>
+
+    <!-- Search + Create Staff -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <!-- Search Form -->
+        <form onsubmit="searchUsers(event)" class="d-flex gap-2">
+            <input 
+                type="text" 
+                name="name" 
+                placeholder="Search name" 
+                id="searchName" 
+                class="form-control"
+            />
+            <input 
+                type="submit" 
+                value="Search Users" 
+                class="btn btn-primary"
+            />
+        </form>
+
+        <!-- Create Staff -->
+        <button class="btn btn-success" id="createStaff">Create New Staff</button>
+    </div>
+
+    <!-- Content -->
+    <div class="card shadow-sm p-4">
+
+        <h2 class="title mb-4">Danh sách người dùng</h2>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle" id="userTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Salary</th>
+                    </tr>
+                </thead>
+                <tbody id="userBody">
+                    <!-- JS render here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="mt-3 d-flex justify-content-center"></div>
+
+    </div>
+
+</div>
+
+
+    </main>
+<!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
       // check admin role only
       const token = sessionStorage.getItem("token");
+    const username = sessionStorage.getItem("username");
+    const role = sessionStorage.getItem("role");
 
-      if (!token) {
-        window.location.href =
-          "/Fe/Pages/Admin/Login.html";
-      }
+if (!token|| role!=="ADMIN") {
+    window.location.href = "../../Login.html";
+}
+
+    document.getElementById("username").innerHTML=`Xin chào, ${username}`;
     //
 
       const API_URL = "http://localhost:8080/api/admin/users";
@@ -228,12 +127,14 @@
         const tbody = document.getElementById("userBody");
         tbody.innerHTML = "";
         if (!users || users.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4">Không có dữ liệu</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="9" class="text-center">Không có dữ liệu</td></tr>`;
           return;
         }
         users.forEach((u) => {
-          tbody.innerHTML += ` <tr onclick="window.location.href='/Fe/Pages/Admin/userDetails.html?id=${u.id}'" style="cursor:pointer;"> 
-            <td>${u.id}</td> <td>${u.username}</td> <td>${u.email}</td> <td>${u.phone}</td> <td>${u.name}</td> <td>${u.age}</td> <td>${u.address}</td> <td>${u.role}</td> <td>${u.status}</td> <td>${u.role === "STAFF" ? u.salary : "-"}</td> 
+          tbody.innerHTML += ` <tr onclick="window.location.href='./userDetails.html?id=${u.id}'" style="cursor:pointer;"> 
+            <td class="text-center">${u.id}</td> <td>${u.username}</td> <td>${u.email}</td> <td>${u.phone}</td> <td>${u.name}</td>
+             <td class="text-end">${u.age!== null ? u.age : "-"}</td>  <td>${u.role}</td> <td>${u.status}</td>
+              <td class="text-end">${u.salary !== null ? u.salary : "-"}</td> 
             </tr> `;
         });
       }
@@ -245,13 +146,14 @@
         if (totalPages <= 1) return; // Nút Prev
         const prevBtn = document.createElement("button");
         prevBtn.innerText = "Prev";
+        prevBtn.className = "btn btn-secondary me-2";
         prevBtn.disabled = number === 0;
         prevBtn.onclick = () => loadUsers(number - 1);
         container.appendChild(prevBtn); // Các nút số trang
         for (let i = 0; i < totalPages; i++) {
           const btn = document.createElement("button");
           btn.innerText = i + 1;
-          btn.className = i === number ? "active-page" : "";
+          btn.className = i === number ?  "btn btn-primary me-2" : "btn btn-outline-primary me-2";
           btn.onclick = () => loadUsers(i);
           container.appendChild(btn);
         } 
@@ -259,6 +161,7 @@
         // Nút Next
         const nextBtn = document.createElement("button");
         nextBtn.innerText = "Next";
+        nextBtn.className = "btn btn-secondary";
         nextBtn.disabled = number === totalPages - 1;
         nextBtn.onclick = () => loadUsers(number + 1);
         container.appendChild(nextBtn);
@@ -293,14 +196,14 @@
         .getElementById("homePage")
         .addEventListener("click", function (e) {
           e.preventDefault();
-          window.location.href = "/Fe/Pages/Admin/Dashboard.html";
+          window.location.href = "./index.html";
         });
       // Create new staff
       document
         .getElementById("createStaff")
         .addEventListener("click", function (e) {
           e.preventDefault();
-          window.location.href = "/Fe/Pages/Admin/registerStaff.html";
+          window.location.href = "./registerStaff.html";
         });
 
     </script>
