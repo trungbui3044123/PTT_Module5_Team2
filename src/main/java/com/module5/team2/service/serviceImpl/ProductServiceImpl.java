@@ -1,0 +1,69 @@
+package com.module5.team2.service.serviceImpl;
+
+import com.module5.team2.dto.request.ProductRequest;
+import com.module5.team2.dto.response.ProductResponse;
+import com.module5.team2.entity.ProductEntity;
+import com.module5.team2.entity.ProductImageEntity;
+import com.module5.team2.entity.UserEntity;
+import com.module5.team2.enums.ProductStatus;
+import com.module5.team2.repository.ProductRepository;
+import com.module5.team2.service.CloudinaryService;
+import com.module5.team2.service.service.ProductService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+
+public class ProductServiceImpl implements ProductService
+{
+    private final ProductRepository productRepository;
+
+    private final CloudinaryService cloudinaryService;
+
+    @Override
+    @Transactional
+    public ProductResponse addProduct(ProductRequest request, MultipartFile[] files, UserEntity supplier) throws IOException {
+        ProductEntity product = ProductEntity.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .price(request.getPrice())
+                .quantity(request.getQuantity())
+                .category(request.getCategory())
+                .status(ProductStatus.ACTIVE)
+                .supplier(supplier)
+                .build();
+        // Xử lý ảnh
+        List<ProductImageEntity> images = new ArrayList<>();
+        if (files != null && files.length > 0) {
+            for(MultipartFile file : files) {
+                Map result = cloudinaryService.upload(file);
+                ProductImageEntity img = new ProductImageEntity();
+                img.setImageUrl(result.get("url").toString());
+                img.setPublicId(result.get("public_id").toString());
+                img.setProduct(product);
+                images.add(img);
+            }
+        }
+
+        product.setImages(images);
+
+        ProductEntity savedProduct = productRepository.save(product);
+
+        return ProductResponse.builder()
+                .id(savedProduct.getId())
+                .name(savedProduct.getName())
+                .price(savedProduct.getPrice())
+                .status(savedProduct.getStatus().name())
+                .imageUrls(savedProduct.getImages().stream().map(ProductImageEntity::getImageUrl).toList())
+                .build();
+    }
+}
