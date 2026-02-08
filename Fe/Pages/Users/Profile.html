@@ -1,10 +1,6 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Details User</title>
-
+ 
     <!-- Bootstrap CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
@@ -15,21 +11,18 @@
     <main>
       <div class="container py-4">
         <!-- Back to list -->
-        <div class="mb-3">
-          <button id="listUser" class="btn btn-secondary">List users</button>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+          <button id="userHome" class="btn btn-link fs-4">Back Home Page</button>
+
+          <p class="fw-semibold fs-5 text-secondary " id="loginUser"></p>
         </div>
 
-        <!-- Username -->
-        <div class="d-flex justify-content-end mb-2">
-          <p class="fw-semibold text-secondary" id="loginUser"></p>
-        </div>
-
-        <h1 id="title" class="mb-4"></h1>
+        <h1 id="title" class="mb-4  text-center"></h1>
 
         <div class="main">
           <div id="error" class="text-danger mb-3"></div>
 
-          <form id="detailsForm" class="p-4 border rounded bg-light">
+         <form id="detailsForm" class="p-4 border rounded bg-light">
             <div id="contentsForm" class="row g-4">
               <!-- Left Column -->
               <div class="col-md-6">
@@ -126,11 +119,7 @@
 
                   <div class="col-md-6 mb-3" id="adminStatus">
                     <label for="status" class="form-label">Status</label>
-                    <select name="status" id="status" class="form-select">
-                      <option value="BANNED">BANNED</option>
-                      <option value="ACTIVE">ACTIVE</option>
-                      <option value="BLOCK">BLOCK</option>
-                    </select>
+                    <input type="text" disabled  class="form-control" id="status" name="status">
                    
                   </div>
                 </div>
@@ -140,14 +129,11 @@
             <!-- Buttons -->
             <div class="mt-4 d-flex justify-content-center gap-3">
               
-              <button
-                type="button"
-                id="resetbtn"
-                onclick="resetPass(event)"
-                class="btn btn-outline-info"
-              >
-                Reset Staff's Password
-              </button>
+            <button type="button" id="resetbtn" onclick="openChangePasswordDialog()" class="btn btn-outline-info" 
+            > Reset Password 
+          </button>
+              
+
               <button
                 type="button"
                 id="editbtn"
@@ -156,23 +142,64 @@
               >
                 Edit
               </button>
-              <button
-                type="button"
-                id="delbtn"
-                onclick="deleteBtn(event)"
-                class="btn btn-outline-danger"
-              >
-                Delete user
-              </button>
+
 
               <h4 id="error" class="text-danger mt-3" style="display: none">
-                Register fails
+                Actions fails
               </h4>
             </div>
           
           </form>
         </div>
       </div>
+      <!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header">
+        <h5 class="modal-title">Change password</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body">
+        <div id="passwordError" class="text-danger mb-2"></div>
+
+        <form id="changePasswordForm">
+
+          <div class="mb-3">
+            <label class="form-label">Old password *</label>
+            <input type="password" id="oldPassword" class="form-control" required />
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">New password *</label>
+            <input type="password" id="newPassword" class="form-control" required />
+            <div class="form-text">
+              ≥ 8 charactor, Uppercase, Lowwercase, Number and SpecialCase
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Confirm New password *</label>
+            <input type="password" id="confirmPassword" class="form-control" required />
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-primary" onclick="submitChangePassword()">Confirm</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
     </main>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -183,18 +210,15 @@
       const loginusername = sessionStorage.getItem("username");
       const role = sessionStorage.getItem("role");
 
-      if (!token || role !== "ADMIN") {
+      if (!token) {
         window.location.href = "../../Login.html";
       }
 
-      document.getElementById("loginUser").innerHTML = `Xin chào, ${loginusername}`;
+      document.getElementById("loginUser").innerHTML = `Hello, ${loginusername}`;
 
-      // get ID
-      const params = new URLSearchParams(window.location.search);
-      const id = params.get("id");
-      console.log(id); // ví dụ: 123
+     
       //   get DOM
-      const editDetailsBtn = document.getElementById("editDetailsBtn");
+      
       const contentsForm = document.getElementById("contentsForm");
       let contents = {
         username: document.getElementById("username"),
@@ -209,7 +233,7 @@
       };
       const title = document.getElementById("title");
       // Gen details data
-      fetch(`http://localhost:8080/api/admin/users/${id}`, {
+      fetch(`http://localhost:8080/api/user/profile`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -243,42 +267,52 @@
             else{
               contents.salary.style.display="none";
               document.getElementById("salaryLabel").style.display="none";
-               document.getElementById("resetbtn").style.display="none";
-
             }
             
           }
         });
-      // backhome page
-      document
-        .getElementById("listUser")
-        .addEventListener("click", function (e) {
-          e.preventDefault();
-          window.location.href = "./userList.html";
-        });
+        //
+        function openChangePasswordDialog(e){
+         
+          const modal = new bootstrap.Modal(document.getElementById("changePasswordModal")); 
+          modal.show();}
 
-        // functions
-        function resetPass(e){
-          e.preventDefault();
-          
-        fetch(`http://localhost:8080/api/admin/users/staff/${id}/reset-password`, {
+        function submitChangePassword(){
+           let ChangePasswordRequest = {
+              oldPassword: document.getElementById("oldPassword").value,
+              newPassword : document.getElementById("newPassword").value,
+              confirmPassword: document.getElementById("confirmPassword").value
+           }
+           const errorDiv = document.getElementById("passwordError"); errorDiv.innerHTML = "";  
+           // Validate confirm 
+           if (ChangePasswordRequest.newPassword !== ChangePasswordRequest.confirmPassword) { 
+            errorDiv.innerHTML = "New password not match"; return; } // Regex validate new password 
+            const regex = /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$/; 
+            if (!regex.test(ChangePasswordRequest.newPassword)) { errorDiv.innerHTML = "New password not valid"; return; }
+            console.log(ChangePasswordRequest)
+           
+        fetch(`http://localhost:8080/api/user/change-password`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: "Bearer " + token,
-        }
+        },
+        body:JSON.stringify(ChangePasswordRequest)
       })
         .then((res) => res.json())
         .then((res) => { console.log(res.status)
           if(res.status===200){
             alert("Reset password done. New password is sent to staff's email");
+            bootstrap.Modal.getInstance(document.getElementById("changePasswordModal")).hide();
             location.reload();
           }else{
+            bootstrap.Modal.getInstance(document.getElementById("changePasswordModal")).hide();
              document.getElementById("error").style.display="block";
-          document.getElementById("error").innerHTML=`${err}`
+             document.getElementById("error").innerHTML=`${err}`
           }
         })
         .catch((err) => { 
+          bootstrap.Modal.getInstance(document.getElementById("changePasswordModal")).hide();
           document.getElementById("error").style.display="block";
           document.getElementById("error").innerHTML=`${err}`
           console.error("Error:", err); })
@@ -287,6 +321,7 @@
                  
         function toEditForm(e){
           e.preventDefault();
+        const salaryValue = document.getElementById("salary").value; 
           const editData={
         username: document.getElementById("username").value,
         email: document.getElementById("email").value,
@@ -295,14 +330,14 @@
         age: document.getElementById("age").value,
         address: document.getElementById("address").value,
         status: document.getElementById("status").value,
-        salary: document.getElementById("salary").value,
+        salary: (salaryValue === "" || salaryValue === "0") ? Number(1000) : Number(salaryValue),
           }
 
         if(!confirm("Edit this user?")){
        
          location.reload();
       }else{ 
-        fetch(`http://localhost:8080/api/admin/users/${id}`, {
+        fetch(`http://localhost:8080/api/user/profile`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -325,30 +360,19 @@
         //end
          }
 
-        function deleteBtn(event){
-          if(confirm("Wanna delete this user?")){
-        fetch(`http://localhost:8080/api/admin/users/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        }
-      })
-        .then((res) => res.json())
-        .then((res) => { console.log(res.status)
-          if(res.status===200){
-            window.location.href = "./userList.html";
-          }else{
-             document.getElementById("error").style.display="block";
-          document.getElementById("error").innerHTML=`${err}`
-          }
-        })
-        .catch((err) => { 
-          document.getElementById("error").style.display="block";
-          document.getElementById("error").innerHTML=`${err}`
-          console.error("Error:", err); })    
-          //end
-          }}
+      // backhome page
+      document
+        .getElementById("userHome")
+        .addEventListener("click", function (e) {
+          e.preventDefault();
+          window.location.href = "./index.html";
+        });
+
+        
+                 
+        
+
+      
       //
     </script>
   </body>
