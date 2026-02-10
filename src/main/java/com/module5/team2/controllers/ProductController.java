@@ -4,6 +4,7 @@ import com.module5.team2.dto.request.ProductRequest;
 import com.module5.team2.dto.response.ApiResponse;
 import com.module5.team2.dto.response.ProductResponse;
 import com.module5.team2.entity.UserEntity;
+import com.module5.team2.enums.ProductStatus;
 import com.module5.team2.security.jwt.CustomUserDetails;
 import com.module5.team2.service.service.ProductService;
 import jakarta.validation.Valid;
@@ -17,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -78,4 +81,23 @@ public class ProductController {
         );
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<ProductResponse>> getProductDetail(@PathVariable Integer id) {
+        ProductResponse data = productService.getProductDetail(id);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Lấy thông tin thành công", data));
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
+            @PathVariable Integer id,
+            @ModelAttribute @Valid ProductRequest request,
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
+            @RequestParam(value = "status", required = false) String status
+    ) throws IOException {
+
+        ProductStatus productStatus = (status != null) ? ProductStatus.valueOf(status) : null;
+        ProductResponse data = productService.updateProduct(id, request, files, productStatus);
+
+        return ResponseEntity.ok(new ApiResponse<>(200, "Cập nhật sản phẩm thành công", data));
+    }
 }

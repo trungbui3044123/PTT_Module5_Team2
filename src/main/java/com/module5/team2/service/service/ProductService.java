@@ -3,6 +3,7 @@ package com.module5.team2.service.service;
 import com.module5.team2.dto.request.ProductRequest;
 import com.module5.team2.dto.response.ProductResponse;
 import com.module5.team2.entity.UserEntity;
+import com.module5.team2.enums.ProductStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,4 +15,6 @@ public interface ProductService {
     Page<ProductResponse> getMyProducts(UserEntity supplier,
                                         String keyword,
                                         Pageable pageable);
+    ProductResponse getProductDetail(Integer id);
+    ProductResponse updateProduct(Integer productId, ProductRequest request, MultipartFile[] files, ProductStatus status) throws IOException;
 }

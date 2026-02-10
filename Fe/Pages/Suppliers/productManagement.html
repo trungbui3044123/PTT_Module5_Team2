@@ -106,6 +106,7 @@
                                 <th>Tên sản phẩm</th>
                                 <th>Loại</th>
                                 <th>Giá bán</th>
+                                <th>Số lượng</th>
                                 <th>Trạng thái</th>
                                 <th class="text-center">Thao tác</th>
                             </tr>
@@ -199,6 +200,10 @@
                 ${p.price.toLocaleString()} VND
             </td>
 
+            <td class="text-danger fw-semibold">
+                ${p.quantity}
+            </td>
+
             <td>
                 <span class="badge badge-${p.status}">
                     ${p.status}
@@ -206,7 +211,7 @@
             </td>
 
             <td class="text-center">
-                <button class="btn btn-sm btn-outline-primary me-1">
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="window.location.href='edit-product.html?id=${p.id}'">
                     <i class="fa fa-edit"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger">
