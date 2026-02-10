@@ -104,6 +104,32 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(java.io.IOException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIOException(java.io.IOException ex) {
+        log.error("IO Exception: {}", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                ApiResponse.<Void>builder()
+                        .status(500)
+                        .message("Lỗi trong quá trình xử lý file hoặc dữ liệu đầu vào")
+                        .build()
+        );
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceededException(
+            org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
+
+        log.error("File size exceeded: {}", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
+                ApiResponse.<Void>builder()
+                        .status(413)
+                        .message("Dung lượng file quá lớn! Vui lòng upload file nhỏ hơn.")
+                        .build()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleException(Exception ex) {
         log.error("Unexpected error", ex);
