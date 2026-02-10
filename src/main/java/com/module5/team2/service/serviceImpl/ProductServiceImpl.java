@@ -46,6 +46,7 @@ public class ProductServiceImpl implements ProductService
                 .build();
         // Xử lý ảnh
         List<ProductImageEntity> images = new ArrayList<>();
+        // TODO: Gioi han file upload size
         if (files != null && files.length > 0) {
             for(MultipartFile file : files) {
                 Map result = cloudinaryService.upload(file);
@@ -111,7 +112,7 @@ public class ProductServiceImpl implements ProductService
     @Override
     public ProductResponse getProductDetail(Integer id) {
         ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Sản phẩm không tồn tại với ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Sản phẩm không tồn tại với ID: " + id));
 
         // Mapping thủ công Entity -> Response
         return ProductResponse.builder()

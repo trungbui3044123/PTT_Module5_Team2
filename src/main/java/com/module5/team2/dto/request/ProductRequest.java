@@ -11,6 +11,8 @@ public class ProductRequest {
     private String name;
 
     @NotBlank(message = "Mô tả không được để trống")
+    @Size(max = 5000, message = "Mô tả không được vượt quá 5000 ký tự")
+    // DONE: Gioi han kich thuoc content (vi du: 5000 length)
     private String description;
 
     @NotNull(message = "Giá không được để trống")
