@@ -10,4 +10,7 @@ import java.util.List;
 
 public interface ProductRepository  extends JpaRepository<ProductEntity, Integer> {
     Page<ProductEntity> findByNameContaining(String name, Pageable pageable);
+    Page<ProductEntity> findBySupplierId(Integer supplierId, Pageable pageable);
+
+    Page<ProductEntity> findBySupplierIdAndNameContainingIgnoreCase(Integer id, String keyword, Pageable pageable);
 }

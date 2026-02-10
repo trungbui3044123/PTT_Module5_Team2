@@ -10,6 +10,7 @@ import java.util.List;
 public class ProductResponse {
     private Integer id;
     private String name;
+    private String category;
     private Double price;
     private String status;
     private List<String> imageUrls;

@@ -101,7 +101,10 @@
                 } else if (!resp.data.enabled) {
                   document.getElementById("error").innerHTML =
                     "User has been banned.Can not not login";
-                } else {
+                } else if("SUPPLIER" === resp.data.role && resp.data.enabled){
+                  window.location.href = "./Pages/Suppliers/index.html";
+                }
+                else {
                   window.location.href = "./Pages/Users/index.html";
                 }
               } else {

@@ -8,6 +8,10 @@ import com.module5.team2.security.jwt.CustomUserDetails;
 import com.module5.team2.service.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -41,4 +45,37 @@ public class ProductController {
         );
 
     }
+
+    @GetMapping("/my-products")
+    public ResponseEntity<ApiResponse<Page<ProductResponse>>> getMyProducts(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword
+    ) {
+
+        CustomUserDetails userDetails =
+                (CustomUserDetails) authentication.getPrincipal();
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("id").descending()
+        );
+
+        Page<ProductResponse> data = productService.getMyProducts(
+                userDetails.getUserEntity(),
+                keyword,
+                pageable
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<Page<ProductResponse>>builder()
+                        .status(200)
+                        .message("Lấy danh sách thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+
 }

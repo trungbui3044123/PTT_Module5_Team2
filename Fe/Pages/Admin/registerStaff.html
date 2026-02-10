@@ -174,7 +174,7 @@ button:hover {
 
     <div>
         <button type="submit">Register</button>
-            <h4 style="display: none;" id="error">Register fails</h4>
+<!--            <h4 style="display: none;" id="error">Register fails</h4>-->
     </div>
 
 </form>
@@ -183,7 +183,7 @@ button:hover {
     const token = sessionStorage.getItem("token");
 
 if (!token) {
-    window.location.href = "/Fe/Pages/Admin/Login.html";
+    window.location.href = "../../Login.html";
 }
 
 document.getElementById("registerForm").addEventListener("submit", async function(e) { 
@@ -214,7 +214,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
     console.log(res);
     
     if(res.status===201){
-        window.location.href = "/Fe/Pages/Admin/Dashboard.html";// Path to index.html
+        window.location.href = "index.html";// Path to index.html
         
     }else{
         const error=document.getElementById("error");
@@ -233,7 +233,7 @@ document.getElementById("registerForm").addEventListener("submit", async functio
 }); 
 document.getElementById("listUsersPage").addEventListener("click",function(e){
     e.preventDefault();
-   window.location.href = "/Fe/Pages/Admin/userList.html";
+   window.location.href = "userList.html";
 })    
     
     </script>
