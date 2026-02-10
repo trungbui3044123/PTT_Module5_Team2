@@ -23,6 +23,7 @@ public class ProductEntity {
     @Column(nullable = false)
     private String name;
 
+    @Column(length = 5000)
     private String description;
 
     @Column(nullable = false)
