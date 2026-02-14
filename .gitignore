@@ -38,4 +38,4 @@ out/
 
 ### env ###
 .env
-.env.dev
+.env.dev"src/main/resources/application.properties" 
