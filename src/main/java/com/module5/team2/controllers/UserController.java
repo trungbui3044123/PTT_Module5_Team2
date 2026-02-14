@@ -1,6 +1,5 @@
 package com.module5.team2.controllers;
 
-
 import com.module5.team2.dto.request.*;
 import com.module5.team2.dto.response.ApiResponse;
 import com.module5.team2.dto.response.LoginResponse;
@@ -14,6 +13,9 @@ import com.module5.team2.security.jwt.JwtTokenProvider;
 import com.module5.team2.service.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -24,369 +26,363 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
+        private final UserService userService;
+        private final AuthenticationManager authenticationManager;
+        private final JwtTokenProvider jwtTokenProvider;
 
-    /**
-     * CUSTOMER & SUPPLIER đăng ký
-     */
-    @PostMapping("/public/register")//done
-    public ResponseEntity<ApiResponse<UserProfileResponse>> register(@Valid @RequestBody RegisterRequest request) {
-        UserEntity user = userService.register(request);
+        /**
+         * CUSTOMER & SUPPLIER đăng ký
+         */
+        @PostMapping("/public/register") // done
+        public ResponseEntity<ApiResponse<UserProfileResponse>> register(@Valid @RequestBody RegisterRequest request) {
+                UserEntity user = userService.register(request);
 
-        UserProfileResponse data = UserProfileResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .name(user.getName())
-                .role(user.getRole().name())
-                .status(user.getStatus().name())
-                .build();
+                UserProfileResponse data = UserProfileResponse.builder()
+                                .id(user.getId())
+                                .username(user.getUsername())
+                                .email(user.getEmail())
+                                .phone(user.getPhone())
+                                .name(user.getName())
+                                .role(user.getRole().name())
+                                .status(user.getStatus().name())
+                                .build();
 
-        return ResponseEntity.ok(
-                ApiResponse.<UserProfileResponse>builder()
-                        .status(200)
-                        .message("Đăng ký thành công")
-                        .data(data)
-                        .build()
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.<UserProfileResponse>builder()
+                                                .status(200)
+                                                .message("Đăng ký thành công")
+                                                .data(data)
+                                                .build());
+        }
 
-    /**
-     * Login dùng chung cho TẤT CẢ role
-     */
-    @PostMapping("/public/login")//done
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
+        /**
+         * Login dùng chung cho TẤT CẢ role
+         */
+        @PostMapping("/public/login") // done
+        public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
+                Authentication authentication = authenticationManager.authenticate(
+                                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
-        String jwt = jwtTokenProvider.generateToken(authentication);
+                String jwt = jwtTokenProvider.generateToken(authentication);
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+                CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        LoginResponse data = new LoginResponse(
-                jwt,
-                userDetails.getUsername(),
-                userDetails.getUserEntity().getRole().name(),
-                userDetails.isEnabled()
-        );
+                LoginResponse data = new LoginResponse(
+                                jwt,
+                                userDetails.getUsername(),
+                                userDetails.getUserEntity().getRole().name(),
+                                userDetails.isEnabled());
 
-        return ResponseEntity.ok(
-                ApiResponse.<LoginResponse>builder()
-                        .status(200)
-                        .message("Đăng nhập thành công")
-                        .data(data)
-                        .build()
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.<LoginResponse>builder()
+                                                .status(200)
+                                                .message("Đăng nhập thành công")
+                                                .data(data)
+                                                .build());
+        }
 
-    /**
-     * LOGIN DÀNH RIÊNG CHO ADMIN-> Ko dung nua
-     */
-//     @PostMapping("/admin/login") //done
-//     public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(@Valid @RequestBody LoginRequest request) {
-//         Authentication authentication = authenticationManager.authenticate(
-//                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-//         );
+        /**
+         * LOGIN DÀNH RIÊNG CHO ADMIN-> Ko dung nua
+         */
+        // @PostMapping("/admin/login") //done
+        // public ResponseEntity<ApiResponse<LoginResponse>> adminLogin(@Valid
+        // @RequestBody LoginRequest request) {
+        // Authentication authentication = authenticationManager.authenticate(
+        // new UsernamePasswordAuthenticationToken(request.getUsername(),
+        // request.getPassword())
+        // );
 
-//         CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        // CustomUserDetails userDetails = (CustomUserDetails)
+        // authentication.getPrincipal();
 
-//         // Kiểm tra có là Admin không
-//         if (userDetails.getUserEntity().getRole() != Role.ADMIN) {
-//             throw new BusinessException("Chỉ Admin mới được đăng nhập");
-//         }
+        // // Kiểm tra có là Admin không
+        // if (userDetails.getUserEntity().getRole() != Role.ADMIN) {
+        // throw new BusinessException("Chỉ Admin mới được đăng nhập");
+        // }
 
-//         String jwt = jwtTokenProvider.generateToken(authentication);
+        // String jwt = jwtTokenProvider.generateToken(authentication);
 
-//         LoginResponse data = new LoginResponse(
-//                 jwt,
-//                 userDetails.getUsername(),
-//                 userDetails.getUserEntity().getRole().name(),
-//                 userDetails.isEnabled()
-//         );
+        // LoginResponse data = new LoginResponse(
+        // jwt,
+        // userDetails.getUsername(),
+        // userDetails.getUserEntity().getRole().name(),
+        // userDetails.isEnabled()
+        // );
 
-//         return ResponseEntity.ok(
-//                 ApiResponse.<LoginResponse>builder()
-//                         .status(200)
-//                         .message("Admin đăng nhập thành công")
-//                         .data(data)
-//                         .build()
-//         );
-//     }
+        // return ResponseEntity.ok(
+        // ApiResponse.<LoginResponse>builder()
+        // .status(200)
+        // .message("Admin đăng nhập thành công")
+        // .data(data)
+        // .build()
+        // );
+        // }
 
-    /**
-     * ADMIN tạo STAFF
-     */
+        /**
+         * ADMIN tạo STAFF
+         */
 
-    @PostMapping("/admin/users/staff") //done
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<UserProfileResponse>> createStaff(
-            @Valid
-            @RequestBody CreateStaffRequest request) {
-        UserEntity staff = userService.createStaff(request);
+        @PostMapping("/admin/users/staff") // done
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<ApiResponse<UserProfileResponse>> createStaff(
+                        @Valid @RequestBody CreateStaffRequest request) {
+                UserEntity staff = userService.createStaff(request);
 
-        UserProfileResponse data = UserProfileResponse.builder()
-                .id(staff.getId())
-                .username(staff.getUsername())
-                .email(staff.getEmail())
-                .phone(staff.getPhone())
-                .name(staff.getName())
-                .age(staff.getAge())
-                .role(staff.getRole().name())
-                .address(staff.getAddress())
-                .status(staff.getStatus().name())
-                .salary(staff.getSalary())
-                .build();
+                UserProfileResponse data = UserProfileResponse.builder()
+                                .id(staff.getId())
+                                .username(staff.getUsername())
+                                .email(staff.getEmail())
+                                .phone(staff.getPhone())
+                                .name(staff.getName())
+                                .age(staff.getAge())
+                                .role(staff.getRole().name())
+                                .address(staff.getAddress())
+                                .status(staff.getStatus().name())
+                                .salary(staff.getSalary())
+                                .build();
 
-        return ResponseEntity.ok(
-                ApiResponse.<UserProfileResponse>builder()
-                        .status(201)
-                        .message("Tạo nhân viên thành công")
-                        .data(data)
-                        .build()
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.<UserProfileResponse>builder()
+                                                .status(201)
+                                                .message("Tạo nhân viên thành công")
+                                                .data(data)
+                                                .build());
+        }
 
-    @PutMapping("/admin/users/staff/{id}/reset-password")//done
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> resetStaffPassword(@PathVariable Integer id) {
-        
-        userService.resetStaffPassword(id);
+        @PutMapping("/admin/users/staff/{id}/reset-password") // done
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<ApiResponse<Void>> resetStaffPassword(@PathVariable Integer id) {
 
-        return ResponseEntity.ok(
-                ApiResponse.<Void>builder()
-                        .status(200)
-                        .message("Reset mật khẩu nhân viên thành công")
-                        .build()
-        );
-    }
+                userService.resetStaffPassword(id);
 
+                return ResponseEntity.ok(
+                                ApiResponse.<Void>builder()
+                                                .status(200)
+                                                .message("Reset mật khẩu nhân viên thành công")
+                                                .build());
+        }
 
-    @GetMapping("/admin/users")//done
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> searchUsers(
-            @RequestParam(required = false) String keyword,
-            @PageableDefault(size = 10, sort = "id") Pageable pageable) { // Mặc định 10 record/trang
+        @GetMapping("/admin/users") // done
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<?> searchUsers(
+                        @RequestParam(required = false) String keyword,
+                        @PageableDefault(size = 10, sort = "id") Pageable pageable) { // Mặc định 10 record/trang
 
-        Page<UserEntity> userPage = userService.searchUsers(keyword, pageable);
+                Page<UserEntity> userPage = userService.searchUsers(keyword, pageable);
 
-        // Map Page<Entity> sang Page<DTO> để trả về đầy đủ thông tin phân trang cho Frontend
-        Page<UserProfileResponse> responsePage = userPage.map(user ->
-                UserProfileResponse.builder()
-                        .id(user.getId())
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .phone(user.getPhone())
-                        .name(user.getName())
-                        .age(user.getAge())
-                        .role(user.getRole().name())
-                        .address(user.getAddress())
-                        .status(user.getStatus().name())
-                        .salary(user.getSalary())
-                        .build()
-        );
+                // Map Page<Entity> sang Page<DTO> để trả về đầy đủ thông tin phân trang cho
+                // Frontend
+                Page<UserProfileResponse> responsePage = userPage.map(user -> UserProfileResponse.builder()
+                                .id(user.getId())
+                                .username(user.getUsername())
+                                .email(user.getEmail())
+                                .phone(user.getPhone())
+                                .name(user.getName())
+                                .age(user.getAge())
+                                .role(user.getRole().name())
+                                .address(user.getAddress())
+                                .status(user.getStatus().name())
+                                .salary(user.getSalary())
+                                .build());
 
-        return ResponseEntity.ok(
-                ApiResponse.builder()
-                        .status(200)
-                        .message("Lấy danh sách người dùng thành công")
-                        .data(responsePage)
-                        .build()
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.builder()
+                                                .status(200)
+                                                .message("Lấy danh sách người dùng thành công")
+                                                .data(responsePage)
+                                                .build());
+        }
 
-    @GetMapping("/admin/users/{id}")//done
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Object>> detailsUser( @PathVariable Integer id) {
-       UserEntity user = userService.findById(id);
-       UserProfileResponse response= UserProfileResponse.builder()
-                        .id(user.getId())
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .phone(user.getPhone())
-                        .name(user.getName())
-                        .age(user.getAge())
-                        .role(user.getRole().name())
-                        .address(user.getAddress())
-                        .status(user.getStatus().name())
-                        .salary(user.getSalary())
-                        .build();
-         return ResponseEntity.ok(
-                ApiResponse.builder()
-                        .status(200)
-                        .message("Lấy danh sách người dùng thành công")
-                        .data(response)
-                        .build()
-        );
-    }
-    
+        @GetMapping("/admin/users/{id}") // done
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<ApiResponse<Object>> detailsUser(@PathVariable Integer id) {
+                UserEntity user = userService.findById(id);
+                UserProfileResponse response = UserProfileResponse.builder()
+                                .id(user.getId())
+                                .username(user.getUsername())
+                                .email(user.getEmail())
+                                .phone(user.getPhone())
+                                .name(user.getName())
+                                .age(user.getAge())
+                                .role(user.getRole().name())
+                                .address(user.getAddress())
+                                .status(user.getStatus().name())
+                                .salary(user.getSalary())
+                                .build();
+                return ResponseEntity.ok(
+                                ApiResponse.builder()
+                                                .status(200)
+                                                .message("Lấy danh sách người dùng thành công")
+                                                .data(response)
+                                                .build());
+        }
 
-    /**
-     * UPDATE USER
-     */
-    @PutMapping("/admin/users/{id}")//done
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<UserProfileResponse>> updateUser(
-            @PathVariable Integer id,
-            @RequestBody UpdateUserRequest request) {
-        UserEntity updatedUser = userService.updateUser(id, request);
+        /**
+         * UPDATE USER
+         */
+        @PutMapping("/admin/users/{id}") // done
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<ApiResponse<UserProfileResponse>> updateUser(
+                        @PathVariable Integer id,
+                        @RequestBody UpdateUserRequest request) {
+                UserEntity updatedUser = userService.updateUser(id, request);
 
-        UserProfileResponse data = UserProfileResponse.builder()
-                .username(updatedUser.getUsername())
-                .email(updatedUser.getEmail())
-                .phone(updatedUser.getPhone())
-                .name(updatedUser.getName())
-                .age(updatedUser.getAge())
-                .address(updatedUser.getAddress())
-                .status(updatedUser.getStatus().name())
-                .salary(updatedUser.getSalary())
-                .build();
+                UserProfileResponse data = UserProfileResponse.builder()
+                                .username(updatedUser.getUsername())
+                                .email(updatedUser.getEmail())
+                                .phone(updatedUser.getPhone())
+                                .name(updatedUser.getName())
+                                .age(updatedUser.getAge())
+                                .address(updatedUser.getAddress())
+                                .status(updatedUser.getStatus().name())
+                                .salary(updatedUser.getSalary())
+                                .build();
 
-        return ResponseEntity.ok(
-                ApiResponse.<UserProfileResponse>builder()
-                        .status(200)
-                        .message("Cập nhật người dùng thành công")
-                        .data(data)
-                        .build()
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.<UserProfileResponse>builder()
+                                                .status(200)
+                                                .message("Cập nhật người dùng thành công")
+                                                .data(data)
+                                                .build());
+        }
 
-    /**
-     * CHANGE STATUS (Block/Active user)
-     */
-//     @PatchMapping("/admin/users/{id}/status")
-//     @PreAuthorize("hasRole('ADMIN')")
-//     public ResponseEntity<ApiResponse<Void>> changeStatus(
-//             @PathVariable Integer id,
-//             @RequestParam Status status) {
-//         userService.changeStatus(id, status);
-//         return ResponseEntity.ok(
-//                 ApiResponse.<Void>builder()
-//                         .status(200)
-//                         .message("Cập nhật trạng thái thành công")
-//                         .build()
-//         );
-//     }
+        /**
+         * CHANGE STATUS (Block/Active user)
+         */
+        // @PatchMapping("/admin/users/{id}/status")
+        // @PreAuthorize("hasRole('ADMIN')")
+        // public ResponseEntity<ApiResponse<Void>> changeStatus(
+        // @PathVariable Integer id,
+        // @RequestParam Status status) {
+        // userService.changeStatus(id, status);
+        // return ResponseEntity.ok(
+        // ApiResponse.<Void>builder()
+        // .status(200)
+        // .message("Cập nhật trạng thái thành công")
+        // .build()
+        // );
+        // }
 
-    /**
-     * DELETE USER
-     */
-    @DeleteMapping("/admin/users/{id}")//done
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Integer id) {
-        userService.deleteUser(id);
-        return ResponseEntity.ok(
-                ApiResponse.<Void>builder()
-                        .status(200)
-                        .message("Xóa người dùng thành công")
-                        .build()
-        );
-    }
+        /**
+         * DELETE USER
+         */
+        @DeleteMapping("/admin/users/{id}") // done
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Integer id) {
+                userService.deleteUser(id);
+                return ResponseEntity.ok(
+                                ApiResponse.<Void>builder()
+                                                .status(200)
+                                                .message("Xóa người dùng thành công")
+                                                .build());
+        }
 
-    /**
-     * PROFILE – thông tin user đang đăng nhập
-     */
-    @GetMapping("/user/profile")//DONE
-    public ResponseEntity<ApiResponse<UserProfileResponse>> profile(
-            Authentication authentication) {
-        CustomUserDetails userDetails =
-                (CustomUserDetails) authentication.getPrincipal();
-        UserEntity user = userDetails.getUserEntity();
+        // Get Supplier lists
+        @GetMapping("/public/suppliers")
+        public ResponseEntity<ApiResponse<List<UserProfileResponse>>> getSuppliers() {
+                List<UserProfileResponse> data = userService.findByStatusAndRoleSupplier(Status.ACTIVE, Role.SUPPLIER);
+                ApiResponse<List<UserProfileResponse>> response = ApiResponse.<List<UserProfileResponse>>builder()
+                                .status(200)
+                                .message("Lấy list suppliers thành công")
+                                .data(data)
+                                .build();
+                return ResponseEntity.ok(response);
+        }
 
-        UserProfileResponse data = UserProfileResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .name(user.getName())
-                .age(user.getAge())
-                .address(user.getAddress())
-                .role(user.getRole().name())
-                .status(user.getStatus().name())
-                .salary(user.getSalary())
-                .build();
+        /**
+         * PROFILE – thông tin user đang đăng nhập
+         */
+        @GetMapping("/user/profile") // DONE
+        public ResponseEntity<ApiResponse<UserProfileResponse>> profile(
+                        Authentication authentication) {
+                CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+                UserEntity user = userDetails.getUserEntity();
 
-        return ResponseEntity.ok(
-                ApiResponse.<UserProfileResponse>builder()
-                        .status(200)
-                        .message("Lấy thông tin người dùng thành công")
-                        .data(data)
-                        .build()
-        );
-    }
+                UserProfileResponse data = UserProfileResponse.builder()
+                                .id(user.getId())
+                                .username(user.getUsername())
+                                .email(user.getEmail())
+                                .phone(user.getPhone())
+                                .name(user.getName())
+                                .age(user.getAge())
+                                .address(user.getAddress())
+                                .role(user.getRole().name())
+                                .status(user.getStatus().name())
+                                .salary(user.getSalary())
+                                .build();
 
-    @PutMapping("/user/profile")//done
-    public ResponseEntity<ApiResponse<UserProfileResponse>> updateOwnProfile(
-            Authentication authentication,
-            @Valid @RequestBody UpdateUserRequest request) {
+                return ResponseEntity.ok(
+                                ApiResponse.<UserProfileResponse>builder()
+                                                .status(200)
+                                                .message("Lấy thông tin người dùng thành công")
+                                                .data(data)
+                                                .build());
+        }
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        Integer currentUserId = userDetails.getUserEntity().getId();
+        @PutMapping("/user/profile") // done
+        public ResponseEntity<ApiResponse<UserProfileResponse>> updateOwnProfile(
+                        Authentication authentication,
+                        @Valid @RequestBody UpdateUserRequest request) {
 
-        UserEntity updatedUser = userService.updateUser(currentUserId, request);
+                CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+                Integer currentUserId = userDetails.getUserEntity().getId();
 
-        UserProfileResponse data = UserProfileResponse.builder()
-                .id(updatedUser.getId())
-                .username(updatedUser.getUsername())
-                .email(updatedUser.getEmail())
-                .phone(updatedUser.getPhone())
-                .name(updatedUser.getName())
-                .age(updatedUser.getAge())
-                .address(updatedUser.getAddress())
-                .role(updatedUser.getRole().name())
-                .status(updatedUser.getStatus().name())
-                .salary(updatedUser.getSalary())
-                .build();
+                UserEntity updatedUser = userService.updateUser(currentUserId, request);
 
-        return ResponseEntity.ok(
-                ApiResponse.<UserProfileResponse>builder()
-                        .status(200)
-                        .message("Cập nhật thông tin cá nhân thành công")
-                        .data(data)
-                        .build()
-        );
-    }
+                UserProfileResponse data = UserProfileResponse.builder()
+                                .id(updatedUser.getId())
+                                .username(updatedUser.getUsername())
+                                .email(updatedUser.getEmail())
+                                .phone(updatedUser.getPhone())
+                                .name(updatedUser.getName())
+                                .age(updatedUser.getAge())
+                                .address(updatedUser.getAddress())
+                                .role(updatedUser.getRole().name())
+                                .status(updatedUser.getStatus().name())
+                                .salary(updatedUser.getSalary())
+                                .build();
 
-    /**
-     * CHANGE PASSWORD
-     */
-    @PutMapping("/user/change-password")//done
-    public ResponseEntity<ApiResponse<Void>> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        userService.changePassword(
-                userDetails.getUserEntity().getId(),
-                request
-        );
-        return ResponseEntity.ok(
-                ApiResponse.<Void>builder()
-                        .status(200)
-                        .message("Đổi mật khẩu thành công")
-                        .build()
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponse.<UserProfileResponse>builder()
+                                                .status(200)
+                                                .message("Cập nhật thông tin cá nhân thành công")
+                                                .data(data)
+                                                .build());
+        }
 
-    /**
-     * FORGOT PASSWORD
-     */
-    @PostMapping("/public/forgot-password")//done
-    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        userService.forgotPassword(request.getEmail());
-        return ResponseEntity.ok(
-                ApiResponse.<Void>builder()
-                        .status(200)
-                        .message("Mật khẩu mới đã được gửi về email")
-                        .build()
-        );
-    }
+        /**
+         * CHANGE PASSWORD
+         */
+        @PutMapping("/user/change-password") // done
+        public ResponseEntity<ApiResponse<Void>> changePassword(Authentication authentication,
+                        @Valid @RequestBody ChangePasswordRequest request) {
+                CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+                userService.changePassword(
+                                userDetails.getUserEntity().getId(),
+                                request);
+                return ResponseEntity.ok(
+                                ApiResponse.<Void>builder()
+                                                .status(200)
+                                                .message("Đổi mật khẩu thành công")
+                                                .build());
+        }
 
+        /**
+         * FORGOT PASSWORD
+         */
+        @PostMapping("/public/forgot-password") // done
+        public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+                userService.forgotPassword(request.getEmail());
+                return ResponseEntity.ok(
+                                ApiResponse.<Void>builder()
+                                                .status(200)
+                                                .message("Mật khẩu mới đã được gửi về email")
+                                                .build());
+        }
 
 }

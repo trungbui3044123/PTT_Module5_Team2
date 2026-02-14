@@ -7,6 +7,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
+import com.module5.team2.enums.Role;
+import com.module5.team2.enums.Status;
+
+
 
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
@@ -21,7 +25,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     List<UserEntity> findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
             String username, String name
     );
-
+    List<UserEntity> findByRole(Role role);
+    List<UserEntity> findByStatusAndRole(Status status, Role role);
     Page<UserEntity> findByUsernameContainingIgnoreCaseOrNameContainingIgnoreCase(
             String username, String name, Pageable pageable);
 

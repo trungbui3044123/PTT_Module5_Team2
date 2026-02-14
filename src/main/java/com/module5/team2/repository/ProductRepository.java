@@ -7,10 +7,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import com.module5.team2.enums.ProductStatus;
+
 
 public interface ProductRepository  extends JpaRepository<ProductEntity, Integer> {
+
     Page<ProductEntity> findByNameContaining(String name, Pageable pageable);
     Page<ProductEntity> findBySupplierId(Integer supplierId, Pageable pageable);
-
+    Page<ProductEntity> findByNameContainingAndStatus(String name,ProductStatus status, Pageable pageable);
+    Page<ProductEntity> findByStatus(ProductStatus status, Pageable pageable);
     Page<ProductEntity> findBySupplierIdAndNameContainingIgnoreCase(Integer id, String keyword, Pageable pageable);
 }

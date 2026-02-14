@@ -5,6 +5,8 @@ import lombok.Data;
 
 import java.util.List;
 
+import com.module5.team2.entity.UserEntity;
+
 @Data
 @Builder
 public class ProductResponse {
@@ -16,4 +18,5 @@ public class ProductResponse {
     private String description;
     private String status;
     private List<String> imageUrls;
+    private String supplierName;
 }

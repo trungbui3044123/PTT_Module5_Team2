@@ -48,7 +48,7 @@ public class ProductController {
         );
 
     }
-
+//read
     @GetMapping("/my-products")
     public ResponseEntity<ApiResponse<Page<ProductResponse>>> getMyProducts(
             Authentication authentication,
@@ -80,13 +80,39 @@ public class ProductController {
                         .build()
         );
     }
+    @GetMapping("/allusers")
+    public ResponseEntity<ApiResponse<Page<ProductResponse>>> getProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword
+    ) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("id").descending()
+        );
+
+        Page<ProductResponse> data = productService.getProducts(
+                keyword,
+                pageable
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<Page<ProductResponse>>builder()
+                        .status(200)
+                        .message("Lấy danh sách thành công")
+                        .data(data)
+                        .build()
+        );
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> getProductDetail(@PathVariable Integer id) {
         ProductResponse data = productService.getProductDetail(id);
         return ResponseEntity.ok(new ApiResponse<>(200, "Lấy thông tin thành công", data));
     }
-
+//edit
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
             @PathVariable Integer id,

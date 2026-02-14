@@ -11,10 +11,17 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 public interface ProductService {
-    ProductResponse addProduct(ProductRequest request, MultipartFile[] files, UserEntity supplier) throws IOException;
+    // read
+
     Page<ProductResponse> getMyProducts(UserEntity supplier,
                                         String keyword,
                                         Pageable pageable);
+    Page<ProductResponse> getProducts(String keyword,Pageable pageable);
+    //save
+    ProductResponse addProduct(ProductRequest request, MultipartFile[] files, UserEntity supplier) throws IOException;
+
+
     ProductResponse getProductDetail(Integer id);
+
     ProductResponse updateProduct(Integer productId, ProductRequest request, MultipartFile[] files, ProductStatus status) throws IOException;
 }

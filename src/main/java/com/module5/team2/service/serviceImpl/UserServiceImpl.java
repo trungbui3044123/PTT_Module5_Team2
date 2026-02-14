@@ -2,6 +2,7 @@ package com.module5.team2.service.serviceImpl;
 
 import com.module5.team2.dto.request.ChangePasswordRequest;
 import com.module5.team2.dto.request.UpdateUserRequest;
+import com.module5.team2.dto.response.UserProfileResponse;
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.enums.Role;
 import com.module5.team2.enums.Status;
@@ -10,6 +11,10 @@ import com.module5.team2.exception.ResourceNotFoundException;
 import com.module5.team2.repository.UserRepository;
 import com.module5.team2.service.service.UserService;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -250,6 +255,23 @@ public class UserServiceImpl implements UserService {
             userRepository.save(admin);
             System.out.println(">>> Đã khởi tạo tài khoản Admin mặc định: admin/admin123");
         }
+    }
+
+    @Override
+    public List<UserProfileResponse> findByStatusAndRoleSupplier(Status status, Role role) {
+       List<UserProfileResponse> userList= userRepository.findByStatusAndRole(status,role).stream().map(userEntity->UserProfileResponse.builder()
+                                        .id(userEntity.getId())
+                                        .username(userEntity.getUsername())
+                                        .email(userEntity.getEmail())
+                                        .phone(userEntity.getPhone())
+                                        .name(userEntity.getName())
+                                        .age(userEntity.getAge())
+                                        .address(userEntity.getAddress())
+                                        .role(userEntity.getRole().toString())
+                                        .status(userEntity.getStatus().toString())
+                                        .build()                                              
+    ).collect(Collectors.toList());
+    return userList;
     }
 
 

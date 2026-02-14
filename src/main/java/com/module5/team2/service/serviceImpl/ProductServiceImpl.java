@@ -170,5 +170,39 @@ public class ProductServiceImpl implements ProductService
                 .imageUrls(saved.getImages().stream().map(ProductImageEntity::getImageUrl).toList())
                 .build();
     }
+
+    @Override
+    public Page<ProductResponse> getProducts(String keyword, Pageable pageable) {
+         Page<ProductEntity> page;
+        
+
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            page = productRepository.findByNameContainingAndStatus(
+                    keyword,
+                    ProductStatus.ACTIVE, 
+                    pageable
+            );
+        } else {
+            page = productRepository.findByStatus(
+                      ProductStatus.ACTIVE, pageable
+            );
+        }
+
+        return page.map(product -> ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .status(product.getStatus().name())
+                .quantity(product.getQuantity())
+                .category(product.getCategory())
+                .imageUrls(
+                        product.getImages()
+                                .stream()
+                                .map(ProductImageEntity::getImageUrl)
+                                .toList()
+                )
+                .supplierName(product.getSupplier().getUsername())          
+                .build());
+    }
 }
 

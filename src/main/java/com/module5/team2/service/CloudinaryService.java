@@ -18,4 +18,10 @@ public class CloudinaryService {
         return cloudinary.uploader().upload(file.getBytes(),
                 ObjectUtils.asMap("folder", "products"));
     }
+    // public String getUserAgent(){
+    //     return cloudinary.getUserAgent();
+    // }
+
+
+    //
 }

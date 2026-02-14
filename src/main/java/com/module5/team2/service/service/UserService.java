@@ -4,11 +4,13 @@ import com.module5.team2.dto.request.ChangePasswordRequest;
 import com.module5.team2.dto.request.CreateStaffRequest;
 import com.module5.team2.dto.request.RegisterRequest;
 import com.module5.team2.dto.request.UpdateUserRequest;
+import com.module5.team2.dto.response.UserProfileResponse;
 import com.module5.team2.entity.UserEntity;
+import com.module5.team2.enums.Role;
 import com.module5.team2.enums.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Query;
+
 
 import java.util.List;
 
@@ -35,7 +37,7 @@ public interface UserService {
 
     UserEntity findByUsername(String username);
 
-//    List<UserEntity> searchUsers(String keyword);
+   List<UserProfileResponse> findByStatusAndRoleSupplier(Status status, Role role);
 
     Page<UserEntity> searchUsers(String keyword, Pageable pageable);
 }
