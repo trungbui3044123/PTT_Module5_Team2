@@ -194,6 +194,7 @@ public class ProductServiceImpl implements ProductService
                 .price(product.getPrice())
                 .status(product.getStatus().name())
                 .quantity(product.getQuantity())
+                .description(product.getDescription())
                 .category(product.getCategory())
                 .imageUrls(
                         product.getImages()
