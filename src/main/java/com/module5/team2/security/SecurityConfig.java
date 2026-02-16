@@ -78,7 +78,7 @@ public class SecurityConfig {
 
                                 // ===== PUBLIC =====
                                 .requestMatchers(
-                                        "/api/public/**","/api/user/products/allusers" ).permitAll()
+                                        "/api/public/**","/api/user/products/allusers/**").permitAll()
 
                                 // ===== ADMIN =====
                                 .requestMatchers("/api/admin/login","http://127.0.0.1:5500/Fe/Pages/Admin/**").permitAll()

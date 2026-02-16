@@ -42,12 +42,11 @@
         color: #000;
       }
       .prodImg img {
-    width: 100%;
-    height: 180px;      
-    object-fit: cover;   
-    border-radius: 6px;
-}
-
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 6px;
+      }
     </style>
   </head>
   <body>
@@ -68,13 +67,11 @@
 
             <!-- Menu -->
             <div class="collapse navbar-collapse" id="mainNav">
+              <!-- Logo -->
+              <a class="navbar-brand fw-bold me-4" href="./Index.html">
+                <i class="fa-solid fa-store"></i> Team2-Shop
+              </a>
               <ul class="navbar-nav ms-auto mb-2 mb-lg-0 text-white">
-                <li class="nav-item">
-                  <a class="nav-link active" href="#">
-                    <i class="fa-solid fa-house"></i> Trang chủ
-                  </a>
-                </li>
-
                 <li class="nav-item">
                   <a class="nav-link" href="#">
                     <i class="fa-solid fa-tags"></i> Sản phẩm
@@ -88,7 +85,7 @@
                 </li>
 
                 <li class="nav-item">
-                  <a class="nav-link" href="./Login.html">
+                  <a class="nav-link" href="./Login.html" id="login">
                     <i class="fa-solid fa-user"></i> Tài khoản
                   </a>
                 </li>
@@ -98,11 +95,6 @@
         </div>
         <div class="p-2 bg-light">
           <nav class="navbar navbar-expand-lg navbar-light bg-white p-3 w-100">
-            <!-- Logo -->
-            <a class="navbar-brand fw-bold me-4" href="#">
-              <i class="fa-solid fa-store"></i> Team2-Shop
-            </a>
-
             <!-- Search -->
             <div class="flex-grow-1 mx-3">
               <div class="input-group">
@@ -138,34 +130,42 @@
               <ul class="nav flex-column gap-1" id="category-menu">
                 <!-- TODO: cần tạo search với categories -->
                 <li class="nav-item mb-2">
-                 <a href="#Electronics" class="nav-link text-dark text-start">Điện tử</a>
+                  <a href="#Electronics" class="nav-link text-dark text-start"
+                    >Điện tử</a
+                  >
                 </li>
                 <li class="nav-item mb-2">
-                 <a href="#Fashion" class="nav-link text-dark text-start">Thời trang</a>
+                  <a href="#Fashion" class="nav-link text-dark text-start"
+                    >Thời trang</a
+                  >
                 </li>
                 <li class="nav-item mb-2">
-                 <a href="#Vegetables" class="nav-link text-dark text-start">Rau củ</a>
+                  <a href="#Vegetables" class="nav-link text-dark text-start"
+                    >Rau củ</a
+                  >
                 </li>
                 <li class="nav-item mb-2">
-                 <a href="#Fruits" class="nav-link text-dark text-start">Trái cây</a>
+                  <a href="#Fruits" class="nav-link text-dark text-start"
+                    >Trái cây</a
+                  >
                 </li>
                 <li class="nav-item mb-2">
-                 <a href="#Meat" class="nav-link text-dark text-start">Thịt</a>
+                  <a href="#Meat" class="nav-link text-dark text-start">Thịt</a>
                 </li>
                 <li class="nav-item mb-2">
-                 <a href="#Fish" class="nav-link text-dark text-start">Cá</a>
+                  <a href="#Fish" class="nav-link text-dark text-start">Cá</a>
                 </li>
                 <li class="nav-item mb-2">
-                 <a href="#Home" class="nav-link text-dark text-start">Gia dụng</a>
+                  <a href="#Home" class="nav-link text-dark text-start"
+                    >Gia dụng</a
+                  >
                 </li>
               </ul>
             </div>
 
             <div class="mb-4">
               <h5 class="text-start mb-3 fw-bold">Suppliers</h5>
-              <ul class="nav flex-column gap-1" id="suppliers_menu">
-                
-              </ul>
+              <ul class="nav flex-column gap-1" id="suppliers_menu"></ul>
             </div>
           </div>
 
@@ -213,7 +213,9 @@
 
                 <!-- Slide 3 -->
                 <div class="carousel-item">
-                  <div class="coupon-slide bg-dark bg-gradient text-white p-2 rounded">
+                  <div
+                    class="coupon-slide bg-dark bg-gradient text-white p-2 rounded"
+                  >
                     <h4 class="fw-bold">
                       <i class="fa-solid fa-bolt"></i> Giảm 50K
                     </h4>
@@ -231,40 +233,39 @@
 
               <!-- Nút điều hướng -->
               <button
-                class="carousel-control-prev  "
+                class="carousel-control-prev"
                 type="button"
                 data-bs-target="#couponCarousel"
                 data-bs-slide="prev"
                 style="width: 36px; height: 36px"
               >
-                <span class="carousel-control-prev-icon  p-3"></span>
+                <span class="carousel-control-prev-icon p-3"></span>
               </button>
 
               <button
-                class="carousel-control-next "
+                class="carousel-control-next"
                 type="button"
                 data-bs-target="#couponCarousel"
                 data-bs-slide="next"
                 style="width: 36px; height: 36px"
               >
-                <span class="carousel-control-next-icon  p-3 "></span>
+                <span class="carousel-control-next-icon p-3"></span>
               </button>
             </div>
-<article >
-            <div class="container my-4">
-            <div class="mb-4"><h3 class="fw-bold">Sản phẩm</h3></div>
-            <div id="product_list" class="row g-3">
-           <!-- Product Card -->
-            
-            </div>
-             <!-- Pagination --> <div id="pagination" class="mt-4 d-flex justify-content-center"></div>
-            </div>
-</article>
-
+            <article>
+              <div class="container my-4">
+                <div class="mb-4"><h3 class="fw-bold">Sản phẩm</h3></div>
+                <div id="product_list" class="row g-3">
+                  <!-- Product Card -->
+                </div>
+                <!-- Pagination -->
+                <div
+                  id="pagination"
+                  class="mt-4 d-flex justify-content-center"
+                ></div>
+              </div>
+            </article>
           </div>
-          
-            
-          </section>
 
           <!-- end rigth content -->
         </div>
@@ -330,7 +331,7 @@
 
           <!-- Bản quyền -->
           <div class="text-center small text-black-50">
-            © 2024 Team2-Shop.Copy right from AI.
+            © 2026 Team2-Shop.Copy right from AI.
           </div>
         </div>
       </footer>
@@ -345,45 +346,44 @@
         navigator.clipboard.writeText(code);
         alert("Đã copy mã: " + code);
       }
-// DOM
+      // DOM
       const token = sessionStorage.getItem("token");
       const username = sessionStorage.getItem("username");
       const role = sessionStorage.getItem("role");
       const suppliers_menu = document.getElementById("suppliers_menu");
+      const login = document.getElementById("login");
 
-      // if (token) {
-      //   login_logout.innerHTML = "Logout";
-      // } else {
-      //   login_logout.innerHTML = "Login";
-      // }
+      if (token) {
+        login.setAttribute("href", "/Fe/Pages/Users/Profile.html");
+      }
 
       // show list suppliers
       fetch("http://localhost:8080/api/public/suppliers")
-      .then(data=>data.json())
-      .then(resp=>{
-        if(resp.status=200){
-        resp.data.forEach(supplier => {
-          const li= document.createElement("li");
-          li.setAttribute("class","nav-item mb-2")
-          const a= document.createElement("a");
-          a.setAttribute("class","nav-link text-dark text-start")
-          a.setAttribute("href",`#Pageof${supplier.name}`)
-          a.innerText=supplier.name
-          li.appendChild(a);
-          suppliers_menu.appendChild(li);
+        .then((data) => data.json())
+        .then((resp) => {
+          if ((resp.status = 200)) {
+            resp.data.forEach((supplier) => {
+              const li = document.createElement("li");
+              li.setAttribute("class", "nav-item mb-2");
+              const a = document.createElement("a");
+              a.setAttribute("class", "nav-link text-dark text-start");
+              a.setAttribute("href", `#Pageof${supplier.name}`);
+              a.innerText = supplier.name;
+              li.appendChild(a);
+              suppliers_menu.appendChild(li);
+            });
+          }
         });
-        }
-      })
       // show list products
       fetch("http://localhost:8080/api/user/products/allusers")
-      .then(data=>data.json())
-      .then(resp=>{
-        const product_list = document.getElementById("product_list");
-        product_list.innerHTML = "";
-        if(resp.status===200){
-          console.log(resp.data.content)
-         resp.data.content.forEach(product => {
-            product_list.innerHTML+=`
+        .then((data) => data.json())
+        .then((resp) => {
+          const product_list = document.getElementById("product_list");
+          product_list.innerHTML = "";
+          if (resp.status === 200) {
+            console.log(resp.data);
+            resp.data.content.forEach((product) => {
+              product_list.innerHTML += `
             <div class="col-6 col-md-4 col-lg-3">
               <div class="product-card position-relative p-3 border rounded shadow-sm w-100" 
      style="max-width: 220px; min-height: 250px;"  id="product_card">
@@ -409,23 +409,25 @@
                         <div class="prodImg"> 
                             <img src="${product.imageUrls}" alt="${product.name}" class="img-fluid rounded"> 
                         </div> 
-                    <!-- Tên sản phẩm --> 
-                     <div class="prodDetails mt-3 text-dark fw-bold text-truncate  style="width: 100px;"> ${product.description}
-                         </div> 
+                    <!-- Details sản phẩm --> 
+                   <div class="prodDetails mt-3 text-dark fw-bold text-truncate" style="width: 100px;">
+  ${product.description}
+</div>
                          <!-- Giá -->
                         <div class="prodPrice text-danger fw-bold mt-2 fs-5">  ${product.price}VND〜 </div> 
                         </a> 
                          </div> 
                           </div> 
             
-            `
-         });
-        }else{
-          product_card.innerHTML=`<h5>No data found</h5>`
-        }
-      })
-      .catch(e => { product_card.innerHTML = `<h5>No data found. ${e}</h5>`; });
-
+            `;
+            });
+          } else {
+            product_card.innerHTML = `<h5>No data found</h5>`;
+          }
+        })
+        .catch((e) => {
+          product_card.innerHTML = `<h5>No data found. ${e}</h5>`;
+        });
 
       // end
     </script>

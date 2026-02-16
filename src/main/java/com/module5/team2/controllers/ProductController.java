@@ -112,6 +112,12 @@ public class ProductController {
         ProductResponse data = productService.getProductDetail(id);
         return ResponseEntity.ok(new ApiResponse<>(200, "Lấy thông tin thành công", data));
     }
+
+    @GetMapping("/allusers/{id}")
+    public ResponseEntity<ApiResponse<ProductResponse>> getAllProductDetail(@PathVariable Integer id) {
+        ProductResponse data = productService.getProductDetail(id);
+        return ResponseEntity.ok(new ApiResponse<>(200, "Lấy thông tin thành công", data));
+    }
 //edit
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
