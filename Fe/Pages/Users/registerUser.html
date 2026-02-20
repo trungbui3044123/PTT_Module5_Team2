@@ -14,7 +14,7 @@
     <main>
         <!-- Back button -->
     <div class="mb-3">
-        <a id="homePage" class="btn btn-link fs-4"> Login Pages</a>
+        <a id="login" class="btn btn-link fs-4"> Login Pages</a>
     </div>
 <div class="container mt-5" style="max-width: 600px;">
     <form id="registerForm" class="card p-4 shadow-sm">
@@ -122,10 +122,10 @@ try { const res = await fetch("http://localhost:8080/api/public/register", {
     
 // backhome page
       document
-        .getElementById("homePage")
+        .getElementById("login")
         .addEventListener("click", function (e) {
           e.preventDefault();
-          window.location.href = "./index.html";
+          window.location.href = "../../Login.html";
         });    
     </script>
 </body>

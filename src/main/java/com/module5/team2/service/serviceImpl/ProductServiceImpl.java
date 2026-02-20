@@ -6,6 +6,7 @@ import com.module5.team2.entity.ProductEntity;
 import com.module5.team2.entity.ProductImageEntity;
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.enums.ProductStatus;
+import com.module5.team2.enums.Status;
 import com.module5.team2.exception.ResourceNotFoundException;
 import com.module5.team2.repository.ProductRepository;
 import com.module5.team2.service.CloudinaryService;
@@ -183,8 +184,8 @@ public class ProductServiceImpl implements ProductService
                     pageable
             );
         } else {
-            page = productRepository.findByStatus(
-                      ProductStatus.ACTIVE, pageable
+            page = productRepository.findByStatusAndSupplier_Status(
+                      ProductStatus.ACTIVE,Status.ACTIVE,pageable
             );
         }
 

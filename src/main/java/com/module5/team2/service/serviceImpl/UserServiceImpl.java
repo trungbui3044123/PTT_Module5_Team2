@@ -259,6 +259,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserProfileResponse> findByStatusAndRoleSupplier(Status status, Role role) {
+        if(status!=Status.ACTIVE){throw new BusinessException("User not actived");}
+        else{
        List<UserProfileResponse> userList= userRepository.findByStatusAndRole(status,role).stream().map(userEntity->UserProfileResponse.builder()
                                         .id(userEntity.getId())
                                         .username(userEntity.getUsername())
@@ -271,7 +273,7 @@ public class UserServiceImpl implements UserService {
                                         .status(userEntity.getStatus().toString())
                                         .build()                                              
     ).collect(Collectors.toList());
-    return userList;
+    return userList;}
     }
 
 
