@@ -72,21 +72,21 @@
                 <i class="fa-solid fa-store"></i> Team2-Shop
               </a>
               <ul class="navbar-nav ms-auto mb-2 mb-lg-0 text-white">
-                <li class="nav-item">
-                  <a class="nav-link" href="#">
-                    <i class="fa-solid fa-tags"></i> Sản phẩm
-                  </a>
-                </li>
 
                 <li class="nav-item">
-                  <a class="nav-link" href="#">
-                    <!-- <i class="fa-solid fa-cart-shopping"></i> Giỏ hàng -->
+                  <a
+                    class="nav-link"
+                    href="./Pages/Users/registerUser.html"
+                    id="profile"
+                  >
+                    <i class="fa-solid fa-user"></i>
+                    <span id="textUserName">Tạo tài khoản</span> 
                   </a>
                 </li>
-
                 <li class="nav-item">
-                  <a class="nav-link" href="./Login.html" id="login">
-                    <i class="fa-solid fa-user"></i> Tài khoản
+                  <a class="nav-link" id="login" href="./Login.html">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                    <span id="textLogin">Log in</span>
                   </a>
                 </li>
               </ul>
@@ -352,10 +352,10 @@
       const role = sessionStorage.getItem("role");
       const suppliers_menu = document.getElementById("suppliers_menu");
       const login = document.getElementById("login");
-
-      if (token) {
-        login.setAttribute("href", "/Fe/Pages/Users/Profile.html");
-      }
+      const profile = document.getElementById("profile");
+      const textUserName = document.getElementById("textUserName");
+      const textLogin = document.getElementById("textLogin");
+      const product_list = document.getElementById("product_list");
 
       // show list suppliers
       fetch("http://localhost:8080/api/public/suppliers")
@@ -380,8 +380,14 @@
         .then((resp) => {
           const product_list = document.getElementById("product_list");
           product_list.innerHTML = "";
-          if (resp.status === 200) {
-            console.log(resp.data);
+
+          if (resp.status === 200&&resp.data.content!==null) {
+          if( token){
+            textUserName.textContent=`Hello ${username}`;
+           textLogin.textContent=`Log out`;
+           profile.setAttribute("href","./Pages/Users/Profile.html") ;
+          }
+
             resp.data.content.forEach((product) => {
               product_list.innerHTML += `
             <div class="col-6 col-md-4 col-lg-3">
@@ -390,7 +396,7 @@
 
             <a class="pcbanner d-block text-decoration-none" href="./Pages/Users/productDetails.html?id=${product.id}"> 
               <!-- Ten san pham --> 
-                    <div class="prodName mb-2"> 
+                    <div class="prodName mb-2 text-truncate"> 
                         <h4>${product.name}</h4>
                     </div> 
                     <!-- Thumbnail + balloon --> 
@@ -414,7 +420,7 @@
   ${product.description}
 </div>
                          <!-- Giá -->
-                        <div class="prodPrice text-danger fw-bold mt-2 fs-5">  ${product.price}VND〜 </div> 
+                        <div class="prodPrice text-danger fw-bold mt-2 fs-5 text-truncate">  ${product.price}VND〜 </div> 
                         </a> 
                          </div> 
                           </div> 
@@ -422,11 +428,12 @@
             `;
             });
           } else {
-            product_card.innerHTML = `<h5>No data found</h5>`;
+            product_list.innerHTML = `<h5>No data found</h5>`;
           }
         })
         .catch((e) => {
-          product_card.innerHTML = `<h5>No data found. ${e}</h5>`;
+          product_list.innerHTML = `<h5>No data found. ${e}</h5>`;
+          
         });
 
       // end
