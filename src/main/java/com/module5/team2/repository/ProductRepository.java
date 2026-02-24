@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.module5.team2.enums.ProductStatus;
 import com.module5.team2.enums.Status;
+import java.util.List;
+
 
 
 public interface ProductRepository  extends JpaRepository<ProductEntity, Integer> {
@@ -18,4 +20,5 @@ public interface ProductRepository  extends JpaRepository<ProductEntity, Integer
     Page<ProductEntity> findByStatus(ProductStatus status, Pageable pageable);
     Page<ProductEntity> findByStatusAndSupplier_Status(ProductStatus status, Status userstatus,Pageable pageable);
     Page<ProductEntity> findBySupplierIdAndNameContainingIgnoreCase(Integer id, String keyword, Pageable pageable);
+    Page<ProductEntity> findByCategoryAndStatus(String category, ProductStatus status, Pageable pageable);
 }

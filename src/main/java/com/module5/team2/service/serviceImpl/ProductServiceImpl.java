@@ -206,5 +206,33 @@ public class ProductServiceImpl implements ProductService
                 .supplierName(product.getSupplier().getUsername())          
                 .build());
     }
+
+    @SuppressWarnings("null")
+    @Override
+    public Page<ProductResponse> getByCateogries(String keyword, Pageable pageable) {
+      
+       if (keyword == null || keyword.trim().isEmpty()) { return Page.empty(pageable); // Trả về trang rỗng 
+        }
+       
+       Page<ProductEntity> page = productRepository.findByCategoryAndStatus( keyword, ProductStatus.ACTIVE, pageable );
+
+        return page.map(product -> ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .price(product.getPrice())
+                .status(product.getStatus().name())
+                .quantity(product.getQuantity())
+                .description(product.getDescription())
+                .category(product.getCategory())
+                .imageUrls(
+                        product.getImages()
+                                .stream()
+                                .map(ProductImageEntity::getImageUrl)
+                                .toList()
+                )
+                .supplierName(product.getSupplier().getUsername())          
+                .build());
+    }
 }
+
 

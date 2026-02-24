@@ -71,8 +71,10 @@
               <a class="navbar-brand fw-bold me-4" href="./Index.html">
                 <i class="fa-solid fa-store"></i> Team2-Shop
               </a>
-              <ul class="navbar-nav ms-auto mb-2 mb-lg-0 text-white">
-
+              <ul
+                class="navbar-nav ms-auto mb-2 mb-lg-0 text-white"
+                id="leftTopUl"
+              >
                 <li class="nav-item">
                   <a
                     class="nav-link"
@@ -80,7 +82,7 @@
                     id="profile"
                   >
                     <i class="fa-solid fa-user"></i>
-                    <span id="textUserName">Tạo tài khoản</span> 
+                    <span id="textUserName">Tạo tài khoản</span>
                   </a>
                 </li>
                 <li class="nav-item">
@@ -104,7 +106,7 @@
                   placeholder="Tìm sản phẩm..."
                   id="searchInput"
                 />
-                <button class="btn btn-primary" onclick="searchProducts()">
+                <button class="btn btn-primary" onclick="searchProducts(event)">
                   <i class="fa fa-search"></i>
                 </button>
               </div>
@@ -130,33 +132,33 @@
               <ul class="nav flex-column gap-1" id="category-menu">
                 <!-- TODO: cần tạo search với categories -->
                 <li class="nav-item mb-2">
-                  <a href="#Electronics" class="nav-link text-dark text-start"
+                  <a href="./Pages/Users/productsAll.html?category=Electronics" class="nav-link text-dark text-start"
                     >Điện tử</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Fashion" class="nav-link text-dark text-start"
+                  <a href="./Pages/Users/productsAll.html?category=Fashion" class="nav-link text-dark text-start"
                     >Thời trang</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Vegetables" class="nav-link text-dark text-start"
+                  <a href="./Pages/Users/productsAll.html?category=Vegetables" class="nav-link text-dark text-start"
                     >Rau củ</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Fruits" class="nav-link text-dark text-start"
+                  <a href="./Pages/Users/productsAll.html?category=Fruits" class="nav-link text-dark text-start"
                     >Trái cây</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Meat" class="nav-link text-dark text-start">Thịt</a>
+                  <a href="./Pages/Users/productsAll.html?category=Meat" class="nav-link text-dark text-start">Thịt</a>
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Fish" class="nav-link text-dark text-start">Cá</a>
+                  <a href="./Pages/Users/productsAll.html?category=Fish" class="nav-link text-dark text-start">Cá</a>
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Home" class="nav-link text-dark text-start"
+                  <a href="./Pages/Users/productsAll.html?category=Home" class="nav-link text-dark text-start"
                     >Gia dụng</a
                   >
                 </li>
@@ -345,18 +347,30 @@
       function copyCoupon(code) {
         navigator.clipboard.writeText(code);
         alert("Đã copy mã: " + code);
-      }
-      // DOM
+      } //ok
+      // Logged in ?
       const token = sessionStorage.getItem("token");
       const username = sessionStorage.getItem("username");
       const role = sessionStorage.getItem("role");
+      // DOM
       const suppliers_menu = document.getElementById("suppliers_menu");
       const login = document.getElementById("login");
       const profile = document.getElementById("profile");
       const textUserName = document.getElementById("textUserName");
       const textLogin = document.getElementById("textLogin");
-      const product_list = document.getElementById("product_list");
+      const leftTopUl = document.getElementById("leftTopUl");
 
+      // show UI with logged in/ not logged in users
+      if(token){
+        textLogin.innerText="Log out";
+        textUserName.innerText="Xin chào "+username;
+        profile.setAttribute("href","./Pages/Users/Profile.html")
+        if("SUPPLIER"===role){
+          const li = document.createElement("li"); 
+          li.className = "nav-item"; 
+          li.innerHTML = ` <a class="nav-link" href="./Pages/Suppliers/index.html" id="profile"> <i class="fa-solid fa-user"></i> <span id="supplierPage">Dành cho nhà cung cấp</span> </a> `; leftTopUl.prepend(li);
+        }
+      }
       // show list suppliers
       fetch("http://localhost:8080/api/public/suppliers")
         .then((data) => data.json())
@@ -373,68 +387,108 @@
               suppliers_menu.appendChild(li);
             });
           }
-        });
+        }); //ok
+
       // show list products
-      fetch("http://localhost:8080/api/user/products/allusers")
-        .then((data) => data.json())
-        .then((resp) => {
-          const product_list = document.getElementById("product_list");
-          product_list.innerHTML = "";
+      const API_URL = "http://localhost:8080/api/user/products/allusers";
+      const productList = document.getElementById("product_list");
+      const pagination = document.getElementById("pagination");
 
-          if (resp.status === 200&&resp.data.content!==null) {
-          if( token){
-            textUserName.textContent=`Hello ${username}`;
-           textLogin.textContent=`Log out`;
-           profile.setAttribute("href","./Pages/Users/Profile.html") ;
+      let currentPage = 0;
+      const pageSize = 10;
+
+      // Gọi API và hiển thị sản phẩm
+      async function fetchProducts(page = 0, keyword = "") {
+        try {
+          const url = new URL(API_URL);
+          url.searchParams.append("page", page);
+          url.searchParams.append("size", pageSize);
+          if (keyword) {
+            url.searchParams.append("keyword", keyword);
           }
+          const response = await fetch(url);
+          const result = await response.json();
 
-            resp.data.content.forEach((product) => {
-              product_list.innerHTML += `
-            <div class="col-6 col-md-4 col-lg-3">
-              <div class="product-card position-relative p-3 border rounded shadow-sm w-100" 
-     style="max-width: 220px; min-height: 250px;"  id="product_card">
+          if (result.status === 200) {
+            const products = result.data.content;
+            const totalPages = result.data.totalPages;
+            currentPage = result.data.number;
+            renderProducts(products);
+            renderPagination(totalPages, currentPage);
+          } else {
+            productList.innerHTML = `<p>Không thể tải sản phẩm.</p>`;
+          }
+        } catch (error) {
+          console.error("Lỗi khi fetch sản phẩm:", error);
+          productList.innerHTML = `<p>Đã xảy ra lỗi khi tải sản phẩm.</p>`;
+        }
+      }
+
+      // Hiển thị danh sách sản phẩm
+      function renderProducts(products) {
+        productList.innerHTML = ""; // Xóa sản phẩm cũ
+
+        products.forEach((product) => {
+          const imageUrl = Array.isArray(product.imageUrls)
+            ? product.imageUrls[0]
+            : product.imageUrls;
+
+          productList.innerHTML += `
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="product-card position-relative p-3 border rounded shadow-sm w-100" 
+            style="max-width: 220px; min-height: 250px;" id="product_card">
 
             <a class="pcbanner d-block text-decoration-none" href="./Pages/Users/productDetails.html?id=${product.id}"> 
-              <!-- Ten san pham --> 
-                    <div class="prodName mb-2 text-truncate"> 
-                        <h4>${product.name}</h4>
-                    </div> 
-                    <!-- Thumbnail + balloon --> 
-                    <div class="proMeta mb-2 d-flex justify-content-between gap-2">
-                        <!-- Cateogries --> 
-                        <div class="category  bg-danger text-white p-1 rounded text-center flex-fill">
-                          <span class="fst-italic" style="font-size: 15px;">${product.category}</span>                                
-                        </div> 
-                        <div class="supplier  border border-light text-primary p-1 rounded text-center flex-fill">
-                          <span class="fst-italic" style="font-size: 15px;">${product.supplierName}</span> 
-                        
-                        </div> 
-
-                    </div> 
-                                      <!-- Ảnh sản phẩm --> 
-                        <div class="prodImg"> 
-                            <img src="${product.imageUrls}" alt="${product.name}" class="img-fluid rounded"> 
-                        </div> 
-                    <!-- Details sản phẩm --> 
-                   <div class="prodDetails mt-3 text-dark fw-bold text-truncate" style="width: 100px;">
-  ${product.description}
-</div>
-                         <!-- Giá -->
-                        <div class="prodPrice text-danger fw-bold mt-2 fs-5 text-truncate">  ${product.price}VND〜 </div> 
-                        </a> 
-                         </div> 
-                          </div> 
-            
-            `;
-            });
-          } else {
-            product_list.innerHTML = `<h5>No data found</h5>`;
-          }
-        })
-        .catch((e) => {
-          product_list.innerHTML = `<h5>No data found. ${e}</h5>`;
-          
+              <div class="prodName mb-2 text-truncate"> 
+                <h4>${product.name}</h4>
+              </div> 
+              <div class="proMeta mb-2 d-flex justify-content-between gap-2">
+                <div class="category bg-danger text-white p-1 rounded text-center flex-fill">
+                  <span class="fst-italic" style="font-size: 15px;">${product.category}</span>                                
+                </div> 
+                <div class="supplier border border-light text-primary p-1 rounded text-center flex-fill">
+                  <span class="fst-italic" style="font-size: 15px;">${product.supplierName}</span> 
+                </div> 
+              </div> 
+              <div class="prodImg"> 
+                <img src="${imageUrl}" alt="${product.name}" class="img-fluid rounded"> 
+              </div> 
+              <div class="prodDetails mt-3 text-dark fw-bold text-truncate" style="width: 100px;">
+                ${product.description}
+              </div>
+              <div class="prodPrice text-danger fw-bold mt-2 fs-5 text-truncate">  
+                ${product.price.toLocaleString()} VND〜 
+              </div> 
+            </a> 
+          </div> 
+        </div>
+      `;
         });
+      }
+
+      // Tạo phân trang
+      function renderPagination(totalPages, currentPage) {
+        pagination.innerHTML = "";
+
+        for (let i = 0; i < totalPages; i++) {
+          const pageBtn = document.createElement("button");
+          pageBtn.className = `btn btn-sm mx-1 ${i === currentPage ? "btn-primary" : "btn-outline-primary"}`;
+          pageBtn.textContent = i + 1;
+          pageBtn.addEventListener("click", () => fetchProducts(i, currentKeyword)); pagination.appendChild(pageBtn);
+        }
+      }
+
+      // Gọi lần đầu khi trang được tải
+      fetchProducts();
+      //  search
+      let currentKeyword = "";
+
+      function searchProducts(event) {
+        event.preventDefault(); // Ngăn form reload trang nếu có 
+        const input = document.getElementById("searchInput"); 
+        currentKeyword = input.value.trim(); 
+        fetchProducts(0, currentKeyword); // Tìm từ trang đầu tiên
+      }
 
       // end
     </script>
