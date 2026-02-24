@@ -17,6 +17,7 @@ public interface ProductService {
                                         String keyword,
                                         Pageable pageable);
     Page<ProductResponse> getProducts(String keyword,Pageable pageable);
+    Page<ProductResponse> getByCateogries(String keyword,Pageable pageable);
     //save
     ProductResponse addProduct(ProductRequest request, MultipartFile[] files, UserEntity supplier) throws IOException;
 

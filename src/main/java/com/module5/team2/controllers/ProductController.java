@@ -115,8 +115,27 @@ public class ProductController {
 
     @GetMapping("/allusers/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> getAllProductDetail(@PathVariable Integer id) {
+        
         ProductResponse data = productService.getProductDetail(id);
         return ResponseEntity.ok(new ApiResponse<>(200, "Lấy thông tin thành công", data));
+    }
+    @GetMapping("/allusers/categories")
+    public ResponseEntity<ApiResponse<Page<ProductResponse>>> getByCateogries(
+         @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam  String category) {
+        Pageable pageable = PageRequest.of(
+        page,
+        size
+);
+        Page<ProductResponse> data = productService.getByCateogries(category,pageable);
+         return ResponseEntity.ok(
+                ApiResponse.<Page<ProductResponse>>builder()
+                        .status(200)
+                        .message("Lấy danh sách thành công")
+                        .data(data)
+                        .build()
+        );
     }
 //edit
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
