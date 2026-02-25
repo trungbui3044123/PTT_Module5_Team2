@@ -55,20 +55,19 @@
               <ul class="navbar-nav ms-auto mb-2 mb-lg-0 text-white">
 
                 <li class="nav-item">
-                  <a class="nav-link" href="#">
-                    <i class="fa-solid fa-tags"></i> Sản phẩm
+                  <a
+                    class="nav-link"
+                    href="./registerUser.html"
+                    id="profile"
+                  >
+                    <i class="fa-solid fa-user"></i>
+                    <span id="textUserName">Tạo tài khoản</span>
                   </a>
                 </li>
-
                 <li class="nav-item">
-                  <a class="nav-link" href="#">
-                    <!-- <i class="fa-solid fa-cart-shopping"></i> Giỏ hàng -->
-                  </a>
-                </li>
-
-                <li class="nav-item">
-                 <a class="nav-link" href="../../Login.html" id="login">
-                    <i class="fa-solid fa-user"></i> Tài khoản
+                  <a class="nav-link" id="login" href="../../Login.html">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                    <span id="textLogin">Log in</span>
                   </a>
                 </li>
               </ul>
@@ -79,39 +78,39 @@
       <div class="container-fluid">
         <div class="row">
           <!-- Sidebar trái -->
-          <div class="col-md-3 col-lg-2 bg-light border-end min-vh-100 p-3">
+<div class="col-md-3 col-lg-2 bg-light border-end min-vh-100 p-3">
             <div class="mb-4">
               <h5 class="text-start mb-3 fw-bold">Danh mục</h5>
               <ul class="nav flex-column gap-1" id="category-menu">
                 <!-- TODO: cần tạo search với categories -->
                 <li class="nav-item mb-2">
-                  <a href="#Electronics" class="nav-link text-dark text-start"
+                  <a href="./productsAll.html?category=Electronics" class="nav-link text-dark text-start"
                     >Điện tử</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Fashion" class="nav-link text-dark text-start"
+                  <a href="./productsAll.html?category=Fashion" class="nav-link text-dark text-start"
                     >Thời trang</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Vegetables" class="nav-link text-dark text-start"
+                  <a href="./productsAll.html?category=Vegetables" class="nav-link text-dark text-start"
                     >Rau củ</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Fruits" class="nav-link text-dark text-start"
+                  <a href="./productsAll.html?category=Fruits" class="nav-link text-dark text-start"
                     >Trái cây</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Meat" class="nav-link text-dark text-start">Thịt</a>
+                  <a href="./productsAll.html?category=Meat" class="nav-link text-dark text-start">Thịt</a>
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Fish" class="nav-link text-dark text-start">Cá</a>
+                  <a href="./productsAll.html?category=Fish" class="nav-link text-dark text-start">Cá</a>
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="#Home" class="nav-link text-dark text-start"
+                  <a href="./productsAll.html?category=Home" class="nav-link text-dark text-start"
                     >Gia dụng</a
                   >
                 </li>
@@ -217,11 +216,22 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+ // DOM
+      const suppliers_menu = document.getElementById("suppliers_menu");
+      const login = document.getElementById("login");
+      const profile = document.getElementById("profile");
+      const textUserName = document.getElementById("textUserName");
+      const textLogin = document.getElementById("textLogin");
+      const leftTopUl = document.getElementById("leftTopUl");
+
       const token = sessionStorage.getItem("token");
       const username = sessionStorage.getItem("username");
       const role = sessionStorage.getItem("role");
       if (token) {
         login.setAttribute("href","./Profile.html")
+        textLogin.innerText="Log out";
+        textUserName.innerText="Xin chào "+username;
+       
       } 
 
 
@@ -235,7 +245,7 @@
           li.setAttribute("class","nav-item mb-2")
           const a= document.createElement("a");
           a.setAttribute("class","nav-link text-dark text-start")
-          a.setAttribute("href",`#Pageof${supplier.name}`)
+          a.setAttribute("href", `../Suppliers/supplierShop.html?id=${supplier.id}&shopName=${supplier.name}`);
           a.innerText=supplier.name
           li.appendChild(a);
           suppliers_menu.appendChild(li);

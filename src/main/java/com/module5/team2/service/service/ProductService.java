@@ -18,6 +18,8 @@ public interface ProductService {
                                         Pageable pageable);
     Page<ProductResponse> getProducts(String keyword,Pageable pageable);
     Page<ProductResponse> getByCateogries(String keyword,Pageable pageable);
+    Page<ProductResponse> findByPriceAndStatus(Double price,String keyword,Pageable pageable);
+    Page<ProductResponse> findSupplierShop(Integer supplierId,Pageable pageable);
     //save
     ProductResponse addProduct(ProductRequest request, MultipartFile[] files, UserEntity supplier) throws IOException;
 

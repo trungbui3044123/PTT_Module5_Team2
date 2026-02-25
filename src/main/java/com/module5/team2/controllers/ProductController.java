@@ -48,7 +48,8 @@ public class ProductController {
         );
 
     }
-//read
+
+    //read
     @GetMapping("/my-products")
     public ResponseEntity<ApiResponse<Page<ProductResponse>>> getMyProducts(
             Authentication authentication,
@@ -80,21 +81,51 @@ public class ProductController {
                         .build()
         );
     }
+   
     @GetMapping("/allusers")
     public ResponseEntity<ApiResponse<Page<ProductResponse>>> getProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String keyword
     ) {
-
+        
         Pageable pageable = PageRequest.of(
                 page,
-                size,
-                Sort.by("id").descending()
+                size
         );
 
         Page<ProductResponse> data = productService.getProducts(
                 keyword,
+                pageable
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.<Page<ProductResponse>>builder()
+                        .status(200)
+                        .message("Lấy danh sách thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+    
+    @GetMapping("/allusers/searchs")
+    public ResponseEntity<ApiResponse<Page<ProductResponse>>> searchProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) Double price,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(required = true)   String category
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc") ? Sort.by("price").descending() : Sort.by("price").ascending();
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                sort
+        );
+
+        Page<ProductResponse> data = productService.findByPriceAndStatus(
+                price,
+                category,
                 pageable
         );
 
@@ -119,6 +150,7 @@ public class ProductController {
         ProductResponse data = productService.getProductDetail(id);
         return ResponseEntity.ok(new ApiResponse<>(200, "Lấy thông tin thành công", data));
     }
+    
     @GetMapping("/allusers/categories")
     public ResponseEntity<ApiResponse<Page<ProductResponse>>> getByCateogries(
          @RequestParam(defaultValue = "0") int page,
@@ -130,6 +162,25 @@ public class ProductController {
 );
         Page<ProductResponse> data = productService.getByCateogries(category,pageable);
          return ResponseEntity.ok(
+                ApiResponse.<Page<ProductResponse>>builder()
+                        .status(200)
+                        .message("Lấy danh sách thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+    @GetMapping("/allusers/supplier/{id}")
+    public ResponseEntity<ApiResponse<Page<ProductResponse>>> getSupplierShop(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @PathVariable int id
+        ) {
+        Pageable pageable = PageRequest.of(
+        page,
+        size
+);
+        Page<ProductResponse> data = productService.findSupplierShop(id,pageable);
+        return ResponseEntity.ok(
                 ApiResponse.<Page<ProductResponse>>builder()
                         .status(200)
                         .message("Lấy danh sách thành công")
