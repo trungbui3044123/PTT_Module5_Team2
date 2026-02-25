@@ -27,212 +27,259 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 
-public class ProductServiceImpl implements ProductService
-{
-    private final ProductRepository productRepository;
+public class ProductServiceImpl implements ProductService {
+        private final ProductRepository productRepository;
 
-    private final CloudinaryService cloudinaryService;
+        private final CloudinaryService cloudinaryService;
 
-    @Override
-    @Transactional
-    public ProductResponse addProduct(ProductRequest request, MultipartFile[] files, UserEntity supplier) throws IOException {
-        ProductEntity product = ProductEntity.builder()
-                .name(request.getName())
-                .description(request.getDescription())
-                .price(request.getPrice())
-                .quantity(request.getQuantity())
-                .category(request.getCategory())
-                .status(ProductStatus.ACTIVE)
-                .supplier(supplier)
-                .build();
-        // Xử lý ảnh
-        List<ProductImageEntity> images = new ArrayList<>();
-        // TODO: Gioi han file upload size
-        if (files != null && files.length > 0) {
-            for(MultipartFile file : files) {
-                Map result = cloudinaryService.upload(file);
-                ProductImageEntity img = new ProductImageEntity();
-                img.setImageUrl(result.get("url").toString());
-                img.setPublicId(result.get("public_id").toString());
-                img.setProduct(product);
-                images.add(img);
-            }
+        @Override
+        @Transactional
+        public ProductResponse addProduct(ProductRequest request, MultipartFile[] files, UserEntity supplier)
+                        throws IOException {
+                ProductEntity product = ProductEntity.builder()
+                                .name(request.getName())
+                                .description(request.getDescription())
+                                .price(request.getPrice())
+                                .quantity(request.getQuantity())
+                                .category(request.getCategory())
+                                .status(ProductStatus.ACTIVE)
+                                .supplier(supplier)
+                                .build();
+                // Xử lý ảnh
+                List<ProductImageEntity> images = new ArrayList<>();
+                // TODO: Gioi han file upload size
+                if (files != null && files.length > 0) {
+                        for (MultipartFile file : files) {
+                                Map result = cloudinaryService.upload(file);
+                                ProductImageEntity img = new ProductImageEntity();
+                                img.setImageUrl(result.get("url").toString());
+                                img.setPublicId(result.get("public_id").toString());
+                                img.setProduct(product);
+                                images.add(img);
+                        }
+                }
+
+                product.setImages(images);
+
+                ProductEntity savedProduct = productRepository.save(product);
+
+                return ProductResponse.builder()
+                                .id(savedProduct.getId())
+                                .name(savedProduct.getName())
+                                .category(product.getCategory())
+                                .price(savedProduct.getPrice())
+                                .quantity(savedProduct.getQuantity())
+                                .description(savedProduct.getDescription())
+                                .status(savedProduct.getStatus().name())
+                                .imageUrls(savedProduct.getImages().stream().map(ProductImageEntity::getImageUrl)
+                                                .toList())
+                                .build();
         }
 
-        product.setImages(images);
+        @Override
+        public Page<ProductResponse> getMyProducts(UserEntity supplier,
+                        String keyword,
+                        Pageable pageable) {
+                Page<ProductEntity> page;
 
-        ProductEntity savedProduct = productRepository.save(product);
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                        page = productRepository.findBySupplierIdAndNameContainingIgnoreCase(
+                                        supplier.getId(),
+                                        keyword,
+                                        pageable);
+                } else {
+                        page = productRepository.findBySupplierId(
+                                        supplier.getId(),
+                                        pageable);
+                }
 
-        return ProductResponse.builder()
-                .id(savedProduct.getId())
-                .name(savedProduct.getName())
-                .category(product.getCategory())
-                .price(savedProduct.getPrice())
-                .quantity(savedProduct.getQuantity())
-                .description(savedProduct.getDescription())
-                .status(savedProduct.getStatus().name())
-                .imageUrls(savedProduct.getImages().stream().map(ProductImageEntity::getImageUrl).toList())
-                .build();
-    }
-
-    @Override
-    public Page<ProductResponse> getMyProducts(UserEntity supplier,
-                                               String keyword,
-                                               Pageable pageable) {
-        Page<ProductEntity> page;
-
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            page = productRepository.findBySupplierIdAndNameContainingIgnoreCase(
-                    supplier.getId(),
-                    keyword,
-                    pageable
-            );
-        } else {
-            page = productRepository.findBySupplierId(
-                    supplier.getId(),
-                    pageable
-            );
+                return page.map(product -> ProductResponse.builder()
+                                .id(product.getId())
+                                .name(product.getName())
+                                .price(product.getPrice())
+                                .status(product.getStatus().name())
+                                .quantity(product.getQuantity())
+                                .category(product.getCategory())
+                                .imageUrls(
+                                                product.getImages()
+                                                                .stream()
+                                                                .map(ProductImageEntity::getImageUrl)
+                                                                .toList())
+                                .build());
         }
 
-        return page.map(product -> ProductResponse.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .price(product.getPrice())
-                .status(product.getStatus().name())
-                .quantity(product.getQuantity())
-                .category(product.getCategory())
-                .imageUrls(
-                        product.getImages()
-                                .stream()
-                                .map(ProductImageEntity::getImageUrl)
-                                .toList()
-                )
-                .build());
-    }
+        @Override
+        public ProductResponse getProductDetail(Integer id) {
+                ProductEntity product = productRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Sản phẩm không tồn tại với ID: " + id));
 
-    @Override
-    public ProductResponse getProductDetail(Integer id) {
-        ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Sản phẩm không tồn tại với ID: " + id));
-
-        // Mapping thủ công Entity -> Response
-        return ProductResponse.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .price(product.getPrice())
-                .quantity(product.getQuantity())
-                .description(product.getDescription())
-                .category(product.getCategory())
-                .status(product.getStatus().name())
-                .imageUrls(product.getImages().stream().map(ProductImageEntity::getImageUrl).toList())
-                .build();
-    }
-
-    @Override
-    @Transactional
-    public ProductResponse updateProduct(Integer id, ProductRequest request, MultipartFile[] files, ProductStatus status) throws IOException {
-        ProductEntity product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy sản phẩm để cập nhật"));
-
-        product.setName(request.getName());
-        product.setDescription(request.getDescription());
-        product.setPrice(request.getPrice());
-        product.setQuantity(request.getQuantity());
-        product.setCategory(request.getCategory());
-
-        if (status != null) {
-            product.setStatus(status);
+                // Mapping thủ công Entity -> Response
+                return ProductResponse.builder()
+                                .id(product.getId())
+                                .name(product.getName())
+                                .price(product.getPrice())
+                                .quantity(product.getQuantity())
+                                .description(product.getDescription())
+                                .category(product.getCategory())
+                                .status(product.getStatus().name())
+                                .imageUrls(product.getImages().stream().map(ProductImageEntity::getImageUrl).toList())
+                                .build();
         }
 
-        if (files != null && files.length > 0) {
-            // Xóa danh sách ảnh cũ trong Entity (orphanRemoval sẽ tự xóa trong DB)
-            product.getImages().clear();
+        @Override
+        @Transactional
+        public ProductResponse updateProduct(Integer id, ProductRequest request, MultipartFile[] files,
+                        ProductStatus status) throws IOException {
+                ProductEntity product = productRepository.findById(id)
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                                                "Không tìm thấy sản phẩm để cập nhật"));
 
-            for (MultipartFile file : files) {
-                Map result = cloudinaryService.upload(file);
-                ProductImageEntity img = new ProductImageEntity();
-                img.setImageUrl(result.get("url").toString());
-                img.setPublicId(result.get("public_id").toString());
-                img.setProduct(product);
-                product.getImages().add(img);
-            }
+                product.setName(request.getName());
+                product.setDescription(request.getDescription());
+                product.setPrice(request.getPrice());
+                product.setQuantity(request.getQuantity());
+                product.setCategory(request.getCategory());
+
+                if (status != null) {
+                        product.setStatus(status);
+                }
+
+                if (files != null && files.length > 0) {
+                        // Xóa danh sách ảnh cũ trong Entity (orphanRemoval sẽ tự xóa trong DB)
+                        product.getImages().clear();
+
+                        for (MultipartFile file : files) {
+                                Map result = cloudinaryService.upload(file);
+                                ProductImageEntity img = new ProductImageEntity();
+                                img.setImageUrl(result.get("url").toString());
+                                img.setPublicId(result.get("public_id").toString());
+                                img.setProduct(product);
+                                product.getImages().add(img);
+                        }
+                }
+
+                ProductEntity saved = productRepository.save(product);
+
+                return ProductResponse.builder()
+                                .id(saved.getId())
+                                .name(saved.getName())
+                                .price(saved.getPrice())
+                                .quantity(saved.getQuantity())
+                                .description(saved.getDescription())
+                                .status(saved.getStatus().name())
+                                .category(saved.getCategory())
+                                .imageUrls(saved.getImages().stream().map(ProductImageEntity::getImageUrl).toList())
+                                .build();
         }
 
-        ProductEntity saved = productRepository.save(product);
+        @Override
+        public Page<ProductResponse> getProducts(String keyword, Pageable pageable) {
+                Page<ProductEntity> page;
 
-        return ProductResponse.builder()
-                .id(saved.getId())
-                .name(saved.getName())
-                .price(saved.getPrice())
-                .quantity(saved.getQuantity())
-                .description(saved.getDescription())
-                .status(saved.getStatus().name())
-                .category(saved.getCategory())
-                .imageUrls(saved.getImages().stream().map(ProductImageEntity::getImageUrl).toList())
-                .build();
-    }
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                        page = productRepository.findByNameContainingAndStatus(
+                                        keyword,
+                                        ProductStatus.ACTIVE,
+                                        pageable);
+                } else {
+                        page = productRepository.findByStatusAndSupplier_Status(
+                                        ProductStatus.ACTIVE, Status.ACTIVE, pageable);
+                }
 
-    @Override
-    public Page<ProductResponse> getProducts(String keyword, Pageable pageable) {
-         Page<ProductEntity> page;
+                return page.map(product -> ProductResponse.builder()
+                                .id(product.getId())
+                                .name(product.getName())
+                                .price(product.getPrice())
+                                .status(product.getStatus().name())
+                                .quantity(product.getQuantity())
+                                .description(product.getDescription())
+                                .category(product.getCategory())
+                                .imageUrls(
+                                                product.getImages()
+                                                                .stream()
+                                                                .map(ProductImageEntity::getImageUrl)
+                                                                .toList())
+                                .supplierName(product.getSupplier().getUsername())
+                                .build());
+        }
+
+        @SuppressWarnings("null")
+        @Override
+        public Page<ProductResponse> getByCateogries(String keyword, Pageable pageable) {
+
+                if (keyword == null || keyword.trim().isEmpty()) {
+                        return Page.empty(pageable); // Trả về trang rỗng
+                }
+
+                Page<ProductEntity> page = productRepository.findByCategoryAndStatus(keyword, ProductStatus.ACTIVE,
+                                pageable);
+
+                return page.map(product -> ProductResponse.builder()
+                                .id(product.getId())
+                                .name(product.getName())
+                                .price(product.getPrice())
+                                .status(product.getStatus().name())
+                                .quantity(product.getQuantity())
+                                .description(product.getDescription())
+                                .category(product.getCategory())
+                                .imageUrls(
+                                                product.getImages()
+                                                                .stream()
+                                                                .map(ProductImageEntity::getImageUrl)
+                                                                .toList())
+                                .supplierName(product.getSupplier().getUsername())
+                                .build());
+        }
+
+        @SuppressWarnings("null")
+        @Override
+        public Page<ProductResponse> findByPriceAndStatus(Double price,String category, Pageable pageable) {
+                if (price == null || price<=0) {
+                        return Page.empty(pageable); // Trả về trang rỗng
+                }
+
+                Page<ProductEntity> page = productRepository.findByPriceLessThanAndStatusAndCategory(price, ProductStatus.ACTIVE, category,pageable);
+// findByPriceLessThanAndStatusAndCategory(Double price, ProductStatus status, String category, Pageable pageable);
+                return page.map(product -> ProductResponse.builder()
+                                .id(product.getId())
+                                .name(product.getName())
+                                .price(product.getPrice())
+                                .status(product.getStatus().name())
+                                .quantity(product.getQuantity())
+                                .description(product.getDescription())
+                                .category(product.getCategory())
+                                .imageUrls(
+                                                product.getImages()
+                                                                .stream()
+                                                                .map(ProductImageEntity::getImageUrl)
+                                                                .toList())
+                                .supplierName(product.getSupplier().getUsername())
+                                .build());
+        }
+
+        @Override
+        public Page<ProductResponse> findSupplierShop(Integer supplierId, Pageable pageable) {
+                Page<ProductEntity> page = productRepository.findBySupplier_IdAndStatus(supplierId, ProductStatus.ACTIVE, pageable);
+                 return page.map(product -> ProductResponse.builder()
+                                .id(product.getId())
+                                .name(product.getName())
+                                .price(product.getPrice())
+                                .status(product.getStatus().name())
+                                .quantity(product.getQuantity())
+                                .description(product.getDescription())
+                                .category(product.getCategory())
+                                .imageUrls(
+                                                product.getImages()
+                                                                .stream()
+                                                                .map(ProductImageEntity::getImageUrl)
+                                                                .toList())
+                                .supplierName(product.getSupplier().getUsername())
+                                .build());
+        }
+
         
 
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            page = productRepository.findByNameContainingAndStatus(
-                    keyword,
-                    ProductStatus.ACTIVE, 
-                    pageable
-            );
-        } else {
-            page = productRepository.findByStatusAndSupplier_Status(
-                      ProductStatus.ACTIVE,Status.ACTIVE,pageable
-            );
-        }
 
-        return page.map(product -> ProductResponse.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .price(product.getPrice())
-                .status(product.getStatus().name())
-                .quantity(product.getQuantity())
-                .description(product.getDescription())
-                .category(product.getCategory())
-                .imageUrls(
-                        product.getImages()
-                                .stream()
-                                .map(ProductImageEntity::getImageUrl)
-                                .toList()
-                )
-                .supplierName(product.getSupplier().getUsername())          
-                .build());
-    }
-
-    @SuppressWarnings("null")
-    @Override
-    public Page<ProductResponse> getByCateogries(String keyword, Pageable pageable) {
-      
-       if (keyword == null || keyword.trim().isEmpty()) { return Page.empty(pageable); // Trả về trang rỗng 
-        }
-       
-       Page<ProductEntity> page = productRepository.findByCategoryAndStatus( keyword, ProductStatus.ACTIVE, pageable );
-
-        return page.map(product -> ProductResponse.builder()
-                .id(product.getId())
-                .name(product.getName())
-                .price(product.getPrice())
-                .status(product.getStatus().name())
-                .quantity(product.getQuantity())
-                .description(product.getDescription())
-                .category(product.getCategory())
-                .imageUrls(
-                        product.getImages()
-                                .stream()
-                                .map(ProductImageEntity::getImageUrl)
-                                .toList()
-                )
-                .supplierName(product.getSupplier().getUsername())          
-                .build());
-    }
+        // end
 }
-
-

@@ -13,6 +13,20 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <style>
+        .product-card {
+  width: 220px;
+  height: 350px;
+  overflow: hidden;
+}
+
+.product-card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+    </style>
   </head>
   <body>
     <main>
@@ -42,7 +56,7 @@
                 <li class="nav-item">
                   <a
                     class="nav-link"
-                    href="./Pages/Users/registerUser.html"
+                    href="./registerUser.html"
                     id="profile"
                   >
                     <i class="fa-solid fa-user"></i>
@@ -50,7 +64,7 @@
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" id="login" href="./Login.html">
+                  <a class="nav-link" id="login" href="../../Login.html">
                     <i class="fa-solid fa-sign-out-alt"></i>
                     <span id="textLogin">Log in</span>
                   </a>
@@ -77,22 +91,12 @@
                   id="searchInput"
                 />
               </div>
-
-              <!-- Giá từ -->
-              <input
-                type="number"
-                class="form-control"
-                placeholder="Giá từ"
-                id="minPriceInput"
-                min="0"
-              />
-
               <!-- Giá đến -->
               <input
                 type="number"
                 class="form-control"
-                placeholder="Đến"
-                id="maxPriceInput"
+                placeholder="Tìm theo giá..."
+                id="searchPrice"
                 min="0"
               />
 
@@ -113,15 +117,10 @@
           </nav>
                      <!-- Tìm theo -->
 <div class="d-flex align-items-center gap-4 ms-4 m-2">
-  <label class="form-label mb-0">Tìm theo:</label>
-
-  <!-- Nút Mới nhất -->
-  <button type="button" class="btn btn-outline-secondary btn-sm" onclick="sortBy('newest')">
-    Mới nhất
-  </button>
+  <label class="form-label mb-0">Sắp xếp theo:</label>
 
   <!-- Dropdown chọn sắp xếp theo giá -->
-  <select class="form-select form-select-sm w-auto" id="sortSelect" onchange="sortBy(this.value)">
+  <select class="form-select form-select-sm w-auto" id="sortSelect" form="searchForm">
     <option value="">-- Sắp xếp theo giá --</option>
     <option value="PriceUp">Giá cao nhất</option>
     <option value="PriceDown">Giá thấp nhất</option>
@@ -151,6 +150,25 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+      // Logged in ?
+      const token = sessionStorage.getItem("token");
+      const username = sessionStorage.getItem("username");
+      const role = sessionStorage.getItem("role");
+      // DOM
+      const textUserName = document.getElementById("textUserName");
+      const textLogin = document.getElementById("textLogin");
+      const leftTopUl = document.getElementById("leftTopUl");
+      // show UI with logged in/ not logged in users
+      if(token){
+        textLogin.innerText="Log out";
+        textUserName.innerText="Xin chào "+username;
+        profile.setAttribute("href","../Users/Profile.html")
+        if("SUPPLIER"===role){
+          const li = document.createElement("li"); 
+          li.className = "nav-item"; 
+          li.innerHTML = ` <a class="nav-link" href="../Suppliers/index.html" id="profile"> <i class="fa-solid fa-user"></i> <span id="supplierPage">Dành cho nhà cung cấp</span> </a> `; leftTopUl.prepend(li);
+        }
+      }
       // get search category
       const params = new URLSearchParams(window.location.search);
       const category = params.get("category");
@@ -207,7 +225,7 @@
           <div class="product-card position-relative p-3 border rounded shadow-sm w-100" 
             style="max-width: 220px; min-height: 250px;" id="product_card">
 
-            <a class="pcbanner d-block text-decoration-none" href="./Pages/Users/productDetails.html?id=${product.id}"> 
+            <a class="pcbanner d-block text-decoration-none" href="./productDetails.html?id=${product.id}"> 
               <div class="prodName mb-2 text-truncate"> 
                 <h4>${product.name}</h4>
               </div> 
@@ -250,13 +268,48 @@
       // Gọi lần đầu khi trang được tải
       fetchProducts();
       //  search
-      let currentKeyword = "";
 
-      function searchProducts(event) {
+    async  function searchProducts(event,page = 0) {
         event.preventDefault(); // Ngăn form reload trang nếu có 
         const input = document.getElementById("searchInput"); 
-        currentKeyword = input.value.trim(); 
-        fetchProducts(0, currentKeyword); // Tìm từ trang đầu tiên
+        const price = document.getElementById("searchPrice").value; 
+        const sortValue  = document.getElementById("sortSelect").value;
+        console.log(category)
+
+        // Chuyển đổi sort 
+        let sortDir = "asc"; 
+        if (sortValue === "PriceUp") sortDir = "desc"; // Giá cao nhất
+        if (sortValue === "PriceDown") sortDir = "asc"; // Giá thấp nhất
+
+
+        const url = new URL("http://localhost:8080/api/user/products/allusers/searchs");
+          url.searchParams.append("page", page);
+          url.searchParams.append("size", pageSize);
+          url.searchParams.append("sortDir", sortDir);
+          url.searchParams.append("category", category);
+          if (price) {
+           url.searchParams.append("price", price);
+          }
+         try {
+          
+
+          const response = await fetch(url);
+          const result = await response.json();
+
+          if (result.status === 200&& result.data.content.length > 0) {
+            const products = result.data.content;
+            const totalPages = result.data.totalPages;
+            currentPage = result.data.number;
+            renderProducts(products);
+            renderPagination(totalPages, currentPage);
+          } else {
+            productList.innerHTML = `<p>Không có sản phẩm.</p>`;
+          }
+        } catch (error) {
+          console.error("Lỗi khi fetch sản phẩm:", error);
+          productList.innerHTML = `<p>Đã xảy ra lỗi khi tải sản phẩm.</p>`;
+        }
+
       }      
     
 
