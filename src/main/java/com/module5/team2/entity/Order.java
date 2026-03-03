@@ -37,6 +37,8 @@ public class Order {
     private String receiverPhone;
     private String receiverAddress;
     private BigDecimal totalAmount;
+    @Column(columnDefinition = "TEXT")
+    private String rejectReason;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     @Builder.Default

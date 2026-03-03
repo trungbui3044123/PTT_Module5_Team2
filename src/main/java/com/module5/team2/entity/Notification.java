@@ -12,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "notifications")
 @Getter
@@ -23,10 +25,25 @@ public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private UserEntity user;
+
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String content;
-    private String type; // hoặc Enum nếu muốn chặt chẽ hơn private Boolean isRead = false; private
+
+    private String type; // hoặc Enum nếu muốn chặt chẽ hơn private Boolean isRead = false;
+
+    private Boolean isRead;
+
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        isRead = false;
+        createdAt = LocalDateTime.now();
+    }
 }

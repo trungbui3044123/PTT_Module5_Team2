@@ -90,7 +90,7 @@ public class SecurityConfig {
                                 .hasAnyRole("STAFF")
 
                                 // ===== USER LOGIN RỒI (customer / supplier / staff / admin) =====
-                                .requestMatchers("/api/user/**")
+                                .requestMatchers("/api/user/**", "/api/supplier/**")
                                 .authenticated()
 
                                 // ===== CÒN LẠI =====

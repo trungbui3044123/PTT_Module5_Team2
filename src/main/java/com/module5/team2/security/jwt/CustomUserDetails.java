@@ -68,4 +68,8 @@ public class CustomUserDetails implements UserDetails {
     public boolean isBanned() {
         return user.getStatus() == Status.BANNED;
     }
+
+    public Integer getId() {
+        return user.getId();
+    }
 }
