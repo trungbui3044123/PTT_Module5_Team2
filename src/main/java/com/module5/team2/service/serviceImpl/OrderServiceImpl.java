@@ -4,6 +4,8 @@ import com.module5.team2.dto.response.OrderItemResponse;
 import com.module5.team2.dto.response.OrderResponse;
 import com.module5.team2.dto.response.OrderSummaryResponse;
 import com.module5.team2.entity.Order;
+import com.module5.team2.entity.OrderItem;
+import com.module5.team2.entity.ProductEntity;
 import com.module5.team2.enums.OrderStatus;
 import com.module5.team2.exception.BusinessException;
 import com.module5.team2.exception.ResourceNotFoundException;
@@ -106,6 +108,16 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
+    private void restoreStock(Order order) {
+        for (OrderItem item : order.getItems()) {
+            ProductEntity product = item.getProduct();
+
+            product.setQuantity(
+                    product.getQuantity() + item.getQuantity()
+            );
+        }
+    }
+
     @Override
     public void rejectOrder(Long orderId, Integer supplierId, String reason) {
 
@@ -118,6 +130,8 @@ public class OrderServiceImpl implements OrderService {
         if (order.getStatus() != OrderStatus.PENDING) {
             throw new BusinessException("Chỉ được từ chối đơn đang chờ xử lý");
         }
+
+        restoreStock(order);
 
         order.setStatus(OrderStatus.REJECT);
         order.setRejectReason(reason);
