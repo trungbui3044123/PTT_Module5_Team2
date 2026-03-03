@@ -229,7 +229,7 @@ public class UserController {
         @PreAuthorize("hasRole('ADMIN')")
         public ResponseEntity<ApiResponse<UserProfileResponse>> updateUser(
                         @PathVariable Integer id,
-                        @RequestBody UpdateUserRequest request) {
+                        @Valid @RequestBody UpdateUserRequest request) {
                 UserEntity updatedUser = userService.updateUser(id, request);
 
                 UserProfileResponse data = UserProfileResponse.builder()

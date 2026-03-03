@@ -34,88 +34,54 @@
               <!-- Left Column -->
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label for="username" class="form-label">User name *</label>
-                  <input
-                    type="text"
-                    id="username"
-                    name="username"
-                    maxlength="100"
-                    class="form-control"
-                    required
-                  />
+                  <label class="form-label">Username *</label>
+                  <input type="text" id="username" class="form-control" required maxlength="50">
+                  <div class="invalid-feedback">Username không được để trống</div>
                 </div>
 
                 <div class="mb-3">
-                  <label for="email" class="form-label">Email *</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    maxlength="150"
-                    class="form-control"
-                    required
-                  />
+                  <label class="form-label">Email</label>
+                  <input type="email" id="email" class="form-control" disabled>
                 </div>
 
                 <div class="mb-3">
-                  <label for="name" class="form-label">Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    maxlength="150"
-                    class="form-control"
-                  />
+                  <label class="form-label">Name *</label>
+                  <input type="text" id="name" class="form-control" required maxlength="150">
+                  <div class="invalid-feedback">Name không được để trống</div>
                 </div>
 
                 <div class="mb-3">
-                  <label for="age" class="form-label">Age</label>
-                  <input
-                    type="number"
-                    id="age"
-                    name="age"
-                    min="0"
-                    class="form-control"
-                  />
+                  <label class="form-label">Age *</label>
+                  <input type="number" id="age" class="form-control"
+                         required min="19" max="59">
+                  <div class="invalid-feedback">Tuổi phải từ 19 đến 59</div>
                 </div>
               </div>
 
               <!-- Right Column -->
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label for="phone" class="form-label">Phone *</label>
-                  <input
-                    type="text"
-                    id="phone"
-                    name="phone"
-                    maxlength="20"
-                    class="form-control"
-                    required
-                  />
+                  <label class="form-label">Phone *</label>
+                  <input type="text" id="phone" class="form-control"
+                         required maxlength="20"
+                         pattern="^(0|\+84)[0-9]{9}$">
+                  <div class="invalid-feedback">Số điện thoại không hợp lệ</div>
                 </div>
 
                 <div class="mb-3">
-                  <label for="address" class="form-label">Address</label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    maxlength="255"
-                    class="form-control"
-                  />
+                  <label class="form-label">Address *</label>
+                  <input type="text" id="address" class="form-control"
+                         required maxlength="255">
+                  <div class="invalid-feedback">Address không được để trống</div>
                 </div>
 
                 <div class="mb-3">
-                  <label for="salary" class="form-label" id="salaryLabel">Salary *</label>
-                  <input
-                    type="number"
-                    id="salary"
-                    name="salary"
-                    min="1"
-                    max="99999999"
-                    class="form-control"
-                    required
-                  />
+                  <label class="form-label">Salary</label>
+                  <input type="number" id="salary" class="form-control"
+                         min="1000" max="99999999">
+                  <div class="invalid-feedback">
+                    Salary phải >= 1000 và tối đa 8 chữ số
+                  </div>
                 </div>
 
                 <div class="row">
@@ -131,7 +97,7 @@
                       <option value="ACTIVE">ACTIVE</option>
                       <option value="BLOCK">BLOCK</option>
                     </select>
-                   
+
                   </div>
                 </div>
               </div>
@@ -139,7 +105,7 @@
 
             <!-- Buttons -->
             <div class="mt-4 d-flex justify-content-center gap-3">
-              
+
               <button
                 type="button"
                 id="resetbtn"
@@ -169,7 +135,7 @@
 <!--                Register fails-->
 <!--              </h4>-->
             </div>
-          
+
           </form>
         </div>
       </div>
@@ -246,7 +212,7 @@
                document.getElementById("resetbtn").style.display="none";
 
             }
-            
+
           }
         });
       // backhome page
@@ -260,7 +226,7 @@
         // functions
         function resetPass(e){
           e.preventDefault();
-          
+
         fetch(`http://localhost:8080/api/admin/users/staff/${id}/reset-password`, {
         method: "PUT",
         headers: {
@@ -278,52 +244,107 @@
           document.getElementById("error").innerHTML=`${err}`
           }
         })
-        .catch((err) => { 
+        .catch((err) => {
           document.getElementById("error").style.display="block";
           document.getElementById("error").innerHTML=`${err}`
           console.error("Error:", err); })
       //end
         }
-                 
-        function toEditForm(e){
-          e.preventDefault();
-          const editData={
-        username: document.getElementById("username").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value,
-        name: document.getElementById("name").value,
-        age: document.getElementById("age").value,
-        address: document.getElementById("address").value,
-        status: document.getElementById("status").value,
-        salary: document.getElementById("salary").value,
-          }
 
-        if(!confirm("Edit this user?")){
-       
-         location.reload();
-      }else{ 
+      function toEditForm(e) {
+        e.preventDefault();
+
+        const form = document.getElementById("detailsForm");
+        const errorDiv = document.getElementById("error");
+
+        errorDiv.classList.remove("text-danger");
+        errorDiv.classList.add("alert", "alert-danger", "d-none");
+        errorDiv.innerHTML = "";
+
+        form.classList.remove("was-validated");
+
+        const roleValue = contents.role.value;
+
+        // STAFF thì salary bắt buộc
+        if (roleValue === "STAFF") {
+          contents.salary.setAttribute("required", "true");
+        } else {
+          contents.salary.removeAttribute("required");
+        }
+
+        // Bootstrap HTML5 validation
+        if (!form.checkValidity()) {
+          form.classList.add("was-validated");
+          showValidationErrors();
+          return;
+        }
+
+        const editData = {
+          username: contents.username.value.trim(),
+          email: contents.email.value,
+          phone: contents.phone.value.trim(),
+          name: contents.name.value.trim(),
+          age: parseInt(contents.age.value),
+          address: contents.address.value.trim(),
+          status: contents.status.value,
+          salary: roleValue === "STAFF"
+                  ? parseFloat(contents.salary.value)
+                  : null
+        };
+
+        if (!confirm("Edit this user?")) return;
+
         fetch(`http://localhost:8080/api/admin/users/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify(editData)
-      })
-        .then((res) => res.json())
-        .then((res) => {
-          if(res.status===200){
-           alert("Edit user infor sucess");
-           location.reload();
-          }
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          body: JSON.stringify(editData),
         })
-        .catch((err) => { 
-          document.getElementById("error").style.display="block";
-          document.getElementById("error").innerHTML=`${err}`
-          console.error("Error:", err); })
+                .then((res) => res.json())
+                .then((res) => {
+                  if (res.status === 200) {
+                    alert("Edit user info success");
+                    location.reload();
+                  } else {
+                    showGlobalError(res.message || "Update failed");
+                  }
+                })
+                .catch(() => showGlobalError("Server error"));
       }
-        //end
-         }
+
+      function showValidationErrors() {
+        const form = document.getElementById("detailsForm");
+        const errorDiv = document.getElementById("error");
+
+        let messages = [];
+        const inputs = form.querySelectorAll("input, select");
+
+        inputs.forEach(input => {
+          if (!input.checkValidity()) {
+            messages.push(input.validationMessage);
+          }
+        });
+
+        if (messages.length > 0) {
+          errorDiv.classList.remove("d-none");
+          errorDiv.innerHTML = `
+      <strong>Vui lòng sửa các lỗi sau:</strong>
+      <ul class="mb-0">
+        ${messages.map(m => `<li>${m}</li>`).join("")}
+      </ul>
+    `;
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }
+
+      function showGlobalError(message) {
+        const errorDiv = document.getElementById("error");
+        errorDiv.classList.remove("d-none");
+        errorDiv.innerText = message;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
 
         function deleteBtn(event){
           if(confirm("Wanna delete this user?")){
@@ -343,10 +364,10 @@
           document.getElementById("error").innerHTML=`${err}`
           }
         })
-        .catch((err) => { 
+        .catch((err) => {
           document.getElementById("error").style.display="block";
           document.getElementById("error").innerHTML=`${err}`
-          console.error("Error:", err); })    
+          console.error("Error:", err); })
           //end
           }}
       //
