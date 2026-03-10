@@ -1,6 +1,7 @@
 package com.module5.team2.service.service;
 
 import com.module5.team2.dto.response.NotificationResponse;
+import com.module5.team2.entity.Order;
 import com.module5.team2.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,7 +11,8 @@ public interface NotificationService {
             UserEntity user,
             String title,
             String content,
-            String type
+            String type,
+            Order order
     );
 
     Page<NotificationResponse> getUserNotifications(

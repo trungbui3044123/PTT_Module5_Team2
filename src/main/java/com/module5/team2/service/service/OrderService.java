@@ -27,4 +27,5 @@ public interface OrderService {
             LocalDateTime start,
             LocalDateTime end
     );
+    void cancelOrder(Long orderId, Integer customerId);
 }

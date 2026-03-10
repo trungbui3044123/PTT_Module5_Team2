@@ -87,6 +87,15 @@ public class SupplierOrderController {
         );
     }
 
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelOrder(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        orderService.cancelOrder(id, user.getId());
+        return ResponseEntity.ok("Hủy đơn thành công");
+    }
+
     @GetMapping("/revenue")
     public ResponseEntity<ApiResponse<BigDecimal>> revenue(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)

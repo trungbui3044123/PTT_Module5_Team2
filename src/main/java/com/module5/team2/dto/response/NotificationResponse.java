@@ -14,4 +14,6 @@ public class NotificationResponse {
     private String type;
     private Boolean isRead;
     private LocalDateTime createdAt;
+
+    private Long orderId;
 }

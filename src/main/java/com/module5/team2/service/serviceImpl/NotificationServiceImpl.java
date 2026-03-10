@@ -2,6 +2,7 @@ package com.module5.team2.service.serviceImpl;
 
 import com.module5.team2.dto.response.NotificationResponse;
 import com.module5.team2.entity.Notification;
+import com.module5.team2.entity.Order;
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.exception.BusinessException;
 import com.module5.team2.exception.ResourceNotFoundException;
@@ -25,11 +26,13 @@ public class NotificationServiceImpl implements NotificationService {
             UserEntity user,
             String title,
             String content,
-            String type
+            String type,
+            Order order
     ) {
 
         Notification notification = Notification.builder()
                 .user(user)
+                .order(order)
                 .title(title)
                 .content(content)
                 .type(type)
@@ -82,6 +85,11 @@ public class NotificationServiceImpl implements NotificationService {
                 .type(notification.getType())
                 .isRead(notification.getIsRead())
                 .createdAt(notification.getCreatedAt())
+                .orderId(
+                        notification.getOrder() != null
+                                ? notification.getOrder().getId()
+                                : null
+                )
                 .build();
     }
 }

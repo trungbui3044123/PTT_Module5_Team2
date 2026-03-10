@@ -11,6 +11,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
     <style>
         .badge-status {
@@ -79,6 +80,25 @@
         <div class="col-md-9 col-lg-10 p-4">
 
             <div class="d-flex justify-content-end mb-3">
+                <!-- Notification Bell -->
+                <div class="dropdown">
+                    <button class="btn position-relative" id="notificationBtn"
+                            data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-bell fs-5"></i>
+                        <span id="notificationBadge"
+                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                              style="display: none;">
+            </span>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end shadow"
+                        style="width: 320px; max-height: 400px; overflow-y: auto;"
+                        id="notificationList">
+                        <li class="dropdown-header fw-bold">Thông báo</li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="text-center text-muted py-2">Không có thông báo</li>
+                    </ul>
+                </div>
                 <p class="fw-semibold text-secondary mb-0"
                    id="usernameDisplay"></p>
             </div>
@@ -110,7 +130,7 @@
                             <th>Địa chỉ</th>
                             <th>Tổng tiền</th>
                             <th>Trạng thái</th>
-                            <th>Ngày tạo</th>
+                            <th>Ngày đặt hàng</th>
                             <th class="text-center">Thao tác</th>
                         </tr>
                         </thead>
@@ -194,6 +214,8 @@
 <!-- JS -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="../../public/assets/notification.js"></script>
 
 <script>
     let currentPage = 0;
@@ -456,11 +478,12 @@
             },
 
             success: function () {
+                toastr.success("Xác nhận đơn hàng thành công")
                 loadOrders();
             },
 
             error: function (xhr) {
-                alert(xhr.responseJSON?.message);
+                toastr.error(xhr.responseJSON?.message);
             },
 
             complete: function () {
@@ -550,6 +573,7 @@
                 bootstrap.Modal.getInstance(
                     document.getElementById("rejectModal")
                 ).hide();
+                toastr.success("Từ chối đơn hàng thành công")
                 loadOrders();
             },
 

@@ -104,7 +104,8 @@ public class OrderServiceImpl implements OrderService {
                 order.getCustomer(),
                 "Đơn hàng được xác nhận",
                 "Đơn hàng #" + order.getId() + " đã được xác nhận",
-                "ORDER_SUCCESS"
+                "ORDER_SUCCESS",
+                order
         );
     }
 
@@ -140,7 +141,8 @@ public class OrderServiceImpl implements OrderService {
                 order.getCustomer(),
                 "Đơn hàng bị từ chối",
                 "Đơn hàng #" + order.getId() + " bị từ chối. Lý do: " + reason,
-                "ORDER_REJECT"
+                "ORDER_REJECT",
+                order
         );
     }
 
@@ -171,5 +173,31 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findById(orderId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Không tìm thấy đơn hàng"));
+    }
+
+    @Override
+    public void cancelOrder(Long orderId, Integer customerId) {
+
+        Order order = getOrder(orderId);
+
+        if (!order.getCustomer().getId().equals(customerId)) {
+            throw new BusinessException("Bạn không có quyền hủy đơn này");
+        }
+
+        if (order.getStatus() != OrderStatus.SUCCESS) {
+            throw new BusinessException("Chỉ được hủy đơn đã xác nhận");
+        }
+
+        order.setStatus(OrderStatus.CANCEL);
+
+        restoreStock(order);
+
+        notificationService.createNotification(
+                order.getSupplier(),
+                "Khách hàng đã hủy đơn",
+                "Khách hàng đã hủy đơn hàng #" + order.getId(),
+                "ORDER_CANCEL",
+                order
+        );
     }
 }

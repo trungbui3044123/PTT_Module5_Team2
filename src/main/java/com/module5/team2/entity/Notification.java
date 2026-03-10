@@ -46,4 +46,8 @@ public class Notification {
         isRead = false;
         createdAt = LocalDateTime.now();
     }
+
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;// thêm orderId
 }

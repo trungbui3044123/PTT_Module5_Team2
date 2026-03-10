@@ -112,6 +112,30 @@
               </div>
             </div>
 
+            <!-- Notification -->
+            <li class="nav-item dropdown ms-3">
+              <button class="btn position-relative" id="notificationBtn" data-bs-toggle="dropdown">
+                <i class="fa-solid fa-bell"></i>
+
+                <span id="notificationBadge"
+                      class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                      style="display:none;"></span>
+              </button>
+
+              <ul class="dropdown-menu dropdown-menu-end shadow"
+                  style="width:320px; max-height:400px; overflow-y:auto;"
+                  id="notificationList">
+
+                <li class="dropdown-header fw-bold">Thông báo</li>
+                <li><hr class="dropdown-divider"></li>
+
+                <li class="text-center text-muted py-2">
+                  Không có thông báo
+                </li>
+
+              </ul>
+            </li>
+
             <!-- Icon bên phải -->
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
               <li class="nav-item ms-3">
@@ -308,6 +332,154 @@
             });
           }
         }); //ok
+
+      //notification
+      async function loadNotifications() {
+
+        if (!token) return;
+
+        try {
+
+          const response = await fetch(
+                  "http://localhost:8080/api/user/notifications?page=0&size=10",
+                  {
+                    headers: {
+                      "Authorization": "Bearer " + token
+                    }
+                  }
+          );
+
+          if (!response.ok) return;
+
+          const result = await response.json();
+          const data = result.data.content;
+
+          const list = document.getElementById("notificationList");
+          const badge = document.getElementById("notificationBadge");
+
+          list.innerHTML = `
+        <li class="dropdown-header fw-bold d-flex justify-content-between">
+            Thông báo
+            <button class="btn btn-sm btn-link p-0" onclick="markAllAsRead()">
+                Đánh dấu tất cả
+            </button>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+    `;
+
+          if (!data || data.length === 0) {
+
+            list.innerHTML += `
+        <li class="text-center text-muted py-2">
+            Không có thông báo
+        </li>
+      `;
+
+            badge.style.display = "none";
+            return;
+          }
+
+          let unreadCount = 0;
+
+          data.forEach(noti => {
+
+            if (!noti.isRead) unreadCount++;
+
+            list.innerHTML += `
+        <li>
+            <a href="#"
+               class="dropdown-item small ${noti.isRead ? '' : 'fw-bold'}"
+               onclick="handleNotificationClick(${noti.id}, ${noti.orderId})">
+
+                ${noti.title}
+                <br>
+                <span class="text-muted">${noti.content}</span>
+
+            </a>
+        </li>
+      `;
+          });
+
+          if (unreadCount > 0) {
+            badge.innerText = unreadCount;
+            badge.style.display = "inline";
+          } else {
+            badge.style.display = "none";
+          }
+
+        } catch (error) {
+          console.error("Load notification error:", error);
+        }
+      }
+
+      // async function handleNotificationClick(notificationId, orderId) {
+      //
+      //   try {
+      //
+      //     const response = await fetch(
+      //             `http://localhost:8080/api/user/notifications/${notificationId}/read`,
+      //             {
+      //               method: "PUT",
+      //               headers: {
+      //                 "Authorization": "Bearer " + token
+      //               }
+      //             }
+      //     );
+      //
+      //     if (response.ok) {
+      //
+      //       updateBadgeCount(-1);
+      //
+      //       window.location.href =
+      //               `./Pages/Users/orderHistory.html?id=${orderId}`;
+      //     }
+      //
+      //   } catch (error) {
+      //     console.error("Notification click error:", error);
+      //   }
+      // }
+
+      function updateBadgeCount(change) {
+
+        const badge = document.getElementById("notificationBadge");
+
+        if (!badge.innerText) return;
+
+        let current = parseInt(badge.innerText);
+
+        current += change;
+
+        if (current <= 0) {
+          badge.style.display = "none";
+        } else {
+          badge.innerText = current;
+        }
+      }
+
+      async function markAllAsRead() {
+
+        try {
+
+          await fetch(
+                  "http://localhost:8080/api/user/notifications/read-all",
+                  {
+                    method: "PUT",
+                    headers: {
+                      "Authorization": "Bearer " + token
+                    }
+                  }
+          );
+
+          document.getElementById("notificationBadge").style.display = "none";
+
+          loadNotifications();
+
+        } catch (error) {
+          console.error("markAllAsRead error:", error);
+        }
+      }
+
+      loadNotifications();
 
       // show list products
       const API_URL = "http://localhost:8080/api/user/products/allusers";
