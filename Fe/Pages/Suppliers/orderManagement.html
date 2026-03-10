@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Supplier - Order Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+    <style>
+        .badge-status {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .status-PENDING {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-SUCCESS {
+            background-color: #d1e7dd;
+            color: #0f5132;
+        }
+
+        .status-REJECT {
+            background-color: #f8d7da;
+            color: #842029;
+        }
+
+        .status-CANCEL {
+            background-color: darkgray;
+            color: whitesmoke;
+        }
+
+        .table td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- ===== SIDEBAR ===== -->
+        <div class="col-md-3 col-lg-2 bg-dark text-white min-vh-100 p-3">
+            <h2 class="text-center mb-4">Supplier Panel</h2>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a href="index.html" class="nav-link text-white">Dashboard</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="productManagement.html" class="nav-link text-white">
+                        Product Management
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="orderManagement.html"
+                       class="nav-link text-white active">
+                        Order Management
+                    </a>
+                </li>
+                <li class="nav-item mt-3">
+                    <a href="../../Login.html"
+                       class="btn btn-danger w-100">Logout</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- ===== CONTENT ===== -->
+        <div class="col-md-9 col-lg-10 p-4">
+
+            <div class="d-flex justify-content-end mb-3">
+                <!-- Notification Bell -->
+                <div class="dropdown">
+                    <button class="btn position-relative" id="notificationBtn"
+                            data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-bell fs-5"></i>
+                        <span id="notificationBadge"
+                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                              style="display: none;">
+            </span>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end shadow"
+                        style="width: 320px; max-height: 400px; overflow-y: auto;"
+                        id="notificationList">
+                        <li class="dropdown-header fw-bold">Thông báo</li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="text-center text-muted py-2">Không có thông báo</li>
+                    </ul>
+                </div>
+                <p class="fw-semibold text-secondary mb-0"
+                   id="usernameDisplay"></p>
+            </div>
+
+            <h2 class="fw-bold mb-4">Danh sách đơn hàng</h2>
+
+            <div class="card shadow-sm p-4">
+
+                <div class="row mb-3">
+
+                    <div class="col-md-3">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">-- Tất cả trạng thái --</option>
+                            <option value="PENDING">Chờ xử lý</option>
+                            <option value="SUCCESS">Đã xác nhận</option>
+                            <option value="REJECT">Đã từ chối</option>
+                            <option value="CANCEL">Đã hủy</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>Mã đơn</th>
+                            <th>Người nhận</th>
+                            <th>SĐT</th>
+                            <th>Địa chỉ</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày đặt hàng</th>
+                            <th class="text-center">Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="orderBody"></tbody>
+                    </table>
+                </div>
+
+                <div id="pagination"
+                     class="mt-3 d-flex justify-content-center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL CHI TIẾT ===== -->
+<div class="modal fade" id="detailModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Chi tiết đơn hàng</h5>
+                <button class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="detailContent"></div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL REJECT ===== -->
+<!-- ===== MODAL REJECT ===== -->
+<div class="modal fade" id="rejectModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Nhập lý do từ chối</h5>
+                <button class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- Select lý do -->
+                <label class="form-label fw-semibold">Chọn lý do</label>
+                <select id="rejectReasonSelect" class="form-select mb-3">
+                    <option value="">-- Chọn lý do --</option>
+                    <option value="OUT_OF_STOCK">Sản phẩm không còn đủ</option>
+                    <option value="INVALID_PRICE">Sai giá sản phẩm</option>
+                    <option value="CUSTOMER_REQUEST">Khách yêu cầu hủy</option>
+                    <option value="OTHER">Lý do khác</option>
+                </select>
+
+                <!-- Textarea chỉ hiện khi chọn OTHER -->
+                <div id="otherReasonWrapper" style="display:none;">
+                    <label class="form-label fw-semibold">Nhập lý do khác</label>
+                    <textarea id="rejectReasonOther"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Nhập lý do..."></textarea>
+                </div>
+
+                <div class="text-danger mt-2" id="rejectError"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                        data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-danger"
+                        id="rejectBtnConfirm">
+                    Xác nhận
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="../../public/assets/notification.js"></script>
+
+<script>
+    let currentPage = 0;
+    let currentStatus = "";
+
+    const token = sessionStorage.getItem("token");
+    const username = sessionStorage.getItem("username");
+    const role = sessionStorage.getItem("role");
+
+    if (!token || role !== "SUPPLIER") {
+        window.location.href = "../../Login.html";
+    }
+
+    $("#usernameDisplay").text("Xin chào, " + username);
+
+    const API_URL = "http://localhost:8080/api/supplier/orders";
+    let currentRejectId = null;
+
+    /* ================= LOAD ORDERS ================= */
+
+    function loadOrders(page = 0) {
+
+        currentPage = page;
+
+        let url = API_URL + "?page=" + page + "&size=10";
+
+        if (currentStatus) {
+            url += "&status=" + currentStatus;
+        }
+
+        $.ajax({
+            url: url,
+            method: "GET",
+            headers: { Authorization: "Bearer " + token },
+
+            beforeSend: function () {
+                $("#orderBody").html(`
+                <tr>
+                    <td colspan="8" class="text-center">
+                        <div class="spinner-border text-primary"></div>
+                    </td>
+                </tr>
+            `);
+            },
+
+            success: function (res) {
+                renderOrders(res.data.content);
+                renderPagination(res.data);
+            },
+
+            error: function (xhr) {
+                alert(xhr.responseJSON?.message || "Lỗi tải dữ liệu");
+            },
+
+            complete: function () {
+                console.log("Load completed");
+            }
+        });
+    }
+
+
+    /* ================= RENDER ================= */
+
+    function renderOrders(orders) {
+
+        let html = "";
+
+        if (!orders || orders.length === 0) {
+            html = `
+        <tr>
+            <td colspan="8" class="text-center text-muted">
+                Không có đơn hàng nào
+            </td>
+        </tr>
+        `;
+        } else {
+
+            orders.forEach(o => {
+
+                html += `
+            <tr>
+                <td class="fw-bold">#${o.id}</td>
+
+                <td>${o.receiverName || "-"}</td>
+
+                <td>${o.receiverPhone || "-"}</td>
+
+                <td style="max-width:200px">
+                    <span class="text-truncate d-inline-block"
+                          style="max-width:200px">
+                        ${o.receiverAddress || "-"}
+                    </span>
+                </td>
+
+                <td class="fw-bold text-danger">
+                    ${o.totalAmount.toLocaleString()} VND
+                </td>
+
+                <td>
+                    <span class="badge-status status-${o.status}">
+                        ${formatStatus(o.status)}
+                    </span>
+                </td>
+
+                <td>${formatDate(o.createdAt)}</td>
+
+                <td class="text-center">
+
+                    <button class="btn btn-sm btn-outline-info me-1"
+                            onclick="viewDetail(${o.id})">
+                        <i class="fa fa-eye"></i>
+                    </button>
+
+                    ${o.status === "PENDING" ? `
+                        <button class="btn btn-sm btn-success me-1"
+                                onclick="confirmOrder(${o.id}, this)">
+                            <i class="fa fa-check"></i>
+                        </button>
+
+                        <button class="btn btn-sm btn-danger"
+                                onclick="openReject(${o.id})">
+                            <i class="fa fa-times"></i>
+                        </button>
+                    ` : ""}
+                </td>
+            </tr>
+            `;
+            });
+        }
+
+        $("#orderBody").html(html);
+    }
+
+    /* ================= VIEW DETAIL ================= */
+
+    function viewDetail(id) {
+
+        $.ajax({
+            url: API_URL + "/" + id,
+            method: "GET",
+            headers: { Authorization: "Bearer " + token },
+
+            beforeSend: function () {
+                $("#detailContent").html(
+                    '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>'
+                );
+            },
+
+            success: function (res) {
+
+                const o = res.data;
+
+                let itemsHtml = "";
+
+                if (o.items && o.items.length > 0) {
+
+                    o.items.forEach((item, index) => {
+                        itemsHtml += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${item.productName}</td>
+                            <td class="text-center">${item.quantity}</td>
+                            <td class="text-end">${item.unitPrice.toLocaleString()} VND</td>
+                            <td class="text-end fw-bold">
+                                ${item.subtotal.toLocaleString()} VND
+                            </td>
+                        </tr>
+                    `;
+                    });
+
+                } else {
+                    itemsHtml = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">
+                            Không có sản phẩm
+                        </td>
+                    </tr>
+                `;
+                }
+
+                $("#detailContent").html(`
+
+                <!-- Thông tin người nhận -->
+                <h6 class="fw-bold">Thông tin người nhận</h6>
+                <p><strong>Tên:</strong> ${o.receiverName}</p>
+                <p><strong>SĐT:</strong> ${o.receiverPhone}</p>
+                <p><strong>Địa chỉ:</strong> ${o.receiverAddress}</p>
+
+                <hr>
+
+                <!-- Thông tin đơn hàng -->
+                <h6 class="fw-bold">Thông tin đơn hàng</h6>
+                <p><strong>Mã đơn:</strong> #${o.id}</p>
+                <p><strong>Ngày đặt:</strong> ${formatDate(o.createdAt)}</p>
+                <p>
+                    <strong>Trạng thái:</strong>
+                    <span class="badge-status status-${o.status}">
+                        ${formatStatus(o.status)}
+                    </span>
+                </p>
+
+                ${o.rejectReason ? `
+                    <p class="text-danger">
+                        <strong>Lý do từ chối:</strong> ${o.rejectReason}
+                    </p>` : ""}
+
+                <hr>
+
+                <!-- Danh sách sản phẩm -->
+                <h6 class="fw-bold">Danh sách sản phẩm</h6>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Sản phẩm</th>
+                                <th class="text-center">Số lượng</th>
+                                <th class="text-end">Đơn giá</th>
+                                <th class="text-end">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="4" class="text-end">Tổng cộng:</th>
+                                <th class="text-end text-danger fs-6">
+                                    ${o.totalAmount.toLocaleString()} VND
+                                </th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+            `);
+
+                new bootstrap.Modal("#detailModal").show();
+            },
+
+            error: function (xhr) {
+                alert(xhr.responseJSON?.message || "Lỗi tải chi tiết");
+            }
+        });
+    }
+
+    /* ================= CONFIRM ================= */
+
+    function confirmOrder(id, btn) {
+
+        $.ajax({
+            url: API_URL + "/" + id + "/confirm",
+            method: "PUT",
+            headers: { Authorization: "Bearer " + token },
+
+            beforeSend: function () {
+                $(btn).html('<span class="spinner-border spinner-border-sm"></span>')
+                    .prop("disabled", true);
+            },
+
+            success: function () {
+                toastr.success("Xác nhận đơn hàng thành công")
+                loadOrders();
+            },
+
+            error: function (xhr) {
+                toastr.error(xhr.responseJSON?.message);
+            },
+
+            complete: function () {
+                console.log("Confirm completed");
+            }
+        });
+    }
+
+    /* ================= REJECT ================= */
+
+    $("#rejectReasonSelect").change(function () {
+
+        const value = $(this).val();
+
+        if (value === "OTHER") {
+            $("#otherReasonWrapper").show();
+        } else {
+            $("#otherReasonWrapper").hide();
+            $("#rejectReasonOther").val("");
+        }
+
+    });
+
+    function openReject(id) {
+
+        currentRejectId = id;
+
+        $("#rejectReasonSelect").val("");
+        $("#rejectReasonOther").val("");
+        $("#otherReasonWrapper").hide();
+        $("#rejectError").text("");
+
+        new bootstrap.Modal("#rejectModal").show();
+    }
+
+    $("#rejectBtnConfirm").click(function () {
+
+        const selectedReason = $("#rejectReasonSelect").val();
+        let finalReason = "";
+
+        if (!selectedReason) {
+            $("#rejectError").text("Vui lòng chọn lý do");
+            return;
+        }
+
+        if (selectedReason === "OTHER") {
+
+            const otherText = $("#rejectReasonOther").val().trim();
+
+            if (!otherText) {
+                $("#rejectError").text("Vui lòng nhập lý do khác");
+                return;
+            }
+
+            finalReason = otherText;
+
+        } else {
+
+            // Map text hiển thị (tùy bạn muốn gửi code hay text)
+            switch (selectedReason) {
+                case "OUT_OF_STOCK":
+                    finalReason = "Sản phẩm không còn đủ";
+                    break;
+                case "INVALID_PRICE":
+                    finalReason = "Sai giá sản phẩm";
+                    break;
+                case "CUSTOMER_REQUEST":
+                    finalReason = "Khách yêu cầu hủy";
+                    break;
+            }
+        }
+
+        $.ajax({
+            url: API_URL + "/" + currentRejectId + "/reject",
+            method: "PUT",
+            contentType: "application/json",
+            headers: { Authorization: "Bearer " + token },
+            data: JSON.stringify({ reason: finalReason }),
+
+            beforeSend: function () {
+                $("#rejectBtnConfirm")
+                    .html('<span class="spinner-border spinner-border-sm"></span>')
+                    .prop("disabled", true);
+            },
+
+            success: function () {
+                bootstrap.Modal.getInstance(
+                    document.getElementById("rejectModal")
+                ).hide();
+                toastr.success("Từ chối đơn hàng thành công")
+                loadOrders();
+            },
+
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+
+                if (!response) {
+                    $("#rejectError").text("Có lỗi xảy ra");
+                    return;
+                }
+
+                // Nếu là lỗi validation
+                if (response.status === 400 && response.data) {
+
+                    // Lấy lỗi của field reason
+                    const reasonError = response.data.reason;
+
+                    if (reasonError) {
+                        $("#rejectError").text(reasonError);
+                    } else {
+                        $("#rejectError").text(response.message);
+                    }
+
+                } else {
+                    $("#rejectError").text(response.message || "Có lỗi xảy ra");
+                }
+            },
+
+            complete: function () {
+                $("#rejectBtnConfirm")
+                    .html("Xác nhận")
+                    .prop("disabled", false);
+            }
+        });
+
+    });
+
+    /* ================= PAGINATION ================= */
+
+    function renderPagination(pageData) {
+
+        let html = "";
+
+        for (let i = 0; i < pageData.totalPages; i++) {
+            html += `
+        <button class="btn btn-sm me-1
+            ${i === pageData.number ? "btn-primary" : "btn-outline-primary"}"
+            onclick="loadOrders(${i})">
+            ${i+1}
+        </button>
+        `;
+        }
+
+        $("#pagination").html(html);
+    }
+
+    /* ================= HELPERS ================= */
+
+    function formatStatus(status) {
+        switch (status) {
+            case "PENDING": return "Chờ xử lý";
+            case "SUCCESS": return "Đã xác nhận";
+            case "REJECT": return "Đã từ chối";
+            case "CANCEL": return "Đã hủy"
+            default: return status;
+        }
+    }
+
+    function formatDate(dateStr) {
+        const d = new Date(dateStr);
+        return d.toLocaleString("vi-VN");
+    }
+
+    loadOrders();
+
+    $("#statusFilter").change(function () {
+        currentStatus = $(this).val();
+        loadOrders(0); // reset về trang đầu
+    });
+</script>
+
+</body>
+</html>
