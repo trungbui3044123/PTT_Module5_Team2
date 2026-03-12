@@ -28,9 +28,11 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private UserEntity customer;
+    
     @ManyToOne
     @JoinColumn(name = "supplier_id")
     private UserEntity supplier;
+    
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     private String receiverName;

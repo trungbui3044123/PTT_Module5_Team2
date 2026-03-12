@@ -1,16 +1,21 @@
 package com.module5.team2.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@Data
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Setter
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginResponse {
     private String jwt;
+    private int id;
     private String username;
     private String role;
     private Boolean isEnable;
-    public boolean isEnabled() { return isEnable; }
+    
 }

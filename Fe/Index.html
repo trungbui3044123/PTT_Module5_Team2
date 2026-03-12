@@ -139,7 +139,7 @@
             <!-- Icon bên phải -->
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
               <li class="nav-item ms-3">
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="./Pages/Users/Cart.html">
                   <i class="fa-solid fa-cart-shopping"></i> Giỏ hàng
                 </a>
               </li>
@@ -246,7 +246,7 @@
                   >
                 </li>
                 <li>
-                  <a href="#" class="text-black-50 text-decoration-none"
+                  <a href="./Pages/Users/Cart.html" class="text-black-50 text-decoration-none"
                     >Giỏ hàng</a
                   >
                 </li>
@@ -296,6 +296,7 @@
       const token = sessionStorage.getItem("token");
       const username = sessionStorage.getItem("username");
       const role = sessionStorage.getItem("role");
+      const userId = sessionStorage.getItem("id");
       // DOM
       const suppliers_menu = document.getElementById("suppliers_menu");
       const login = document.getElementById("login");
@@ -308,7 +309,7 @@
       if(token){
         textLogin.innerText="Log out";
         textUserName.innerText="Xin chào "+username;
-        profile.setAttribute("href","./Pages/Users/Profile.html")
+        profile.setAttribute("href","./Profile.html")
         if("SUPPLIER"===role){
           const li = document.createElement("li"); 
           li.className = "nav-item"; 

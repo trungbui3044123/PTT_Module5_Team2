@@ -28,6 +28,26 @@
         font-weight: 600;
         color: #6c757d;
       }
+      .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+
+      .popup-box {
+        background: white;
+        padding: 20px;
+        width: 350px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px #0003;
+      }
     </style>
   </head>
   <body>
@@ -48,18 +68,13 @@
 
             <!-- Menu -->
             <div class="collapse navbar-collapse" id="mainNav">
-                 <!-- Logo -->
-                  <a class="navbar-brand fw-bold me-4" href="../../Index.html">
-                    <i class="fa-solid fa-store"></i> Team2-Shop
-                  </a>
+              <!-- Logo -->
+              <a class="navbar-brand fw-bold me-4" href="../../Index.html">
+                <i class="fa-solid fa-store"></i> Team2-Shop
+              </a>
               <ul class="navbar-nav ms-auto mb-2 mb-lg-0 text-white">
-
                 <li class="nav-item">
-                  <a
-                    class="nav-link"
-                    href="./registerUser.html"
-                    id="profile"
-                  >
+                  <a class="nav-link" href="./registerUser.html" id="profile">
                     <i class="fa-solid fa-user"></i>
                     <span id="textUserName">Tạo tài khoản</span>
                   </a>
@@ -78,39 +93,57 @@
       <div class="container-fluid">
         <div class="row">
           <!-- Sidebar trái -->
-<div class="col-md-3 col-lg-2 bg-light border-end min-vh-100 p-3">
+          <div class="col-md-3 col-lg-2 bg-light border-end min-vh-100 p-3">
             <div class="mb-4">
               <h5 class="text-start mb-3 fw-bold">Danh mục</h5>
               <ul class="nav flex-column gap-1" id="category-menu">
                 <!-- TODO: cần tạo search với categories -->
                 <li class="nav-item mb-2">
-                  <a href="./productsAll.html?category=Electronics" class="nav-link text-dark text-start"
+                  <a
+                    href="./productsAll.html?category=Electronics"
+                    class="nav-link text-dark text-start"
                     >Điện tử</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="./productsAll.html?category=Fashion" class="nav-link text-dark text-start"
+                  <a
+                    href="./productsAll.html?category=Fashion"
+                    class="nav-link text-dark text-start"
                     >Thời trang</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="./productsAll.html?category=Vegetables" class="nav-link text-dark text-start"
+                  <a
+                    href="./productsAll.html?category=Vegetables"
+                    class="nav-link text-dark text-start"
                     >Rau củ</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="./productsAll.html?category=Fruits" class="nav-link text-dark text-start"
+                  <a
+                    href="./productsAll.html?category=Fruits"
+                    class="nav-link text-dark text-start"
                     >Trái cây</a
                   >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="./productsAll.html?category=Meat" class="nav-link text-dark text-start">Thịt</a>
+                  <a
+                    href="./productsAll.html?category=Meat"
+                    class="nav-link text-dark text-start"
+                    >Thịt</a
+                  >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="./productsAll.html?category=Fish" class="nav-link text-dark text-start">Cá</a>
+                  <a
+                    href="./productsAll.html?category=Fish"
+                    class="nav-link text-dark text-start"
+                    >Cá</a
+                  >
                 </li>
                 <li class="nav-item mb-2">
-                  <a href="./productsAll.html?category=Home" class="nav-link text-dark text-start"
+                  <a
+                    href="./productsAll.html?category=Home"
+                    class="nav-link text-dark text-start"
                     >Gia dụng</a
                   >
                 </li>
@@ -198,15 +231,39 @@
                   </p>
                   <p id="description"></p>
 
-                  <a
-                    href="../../Index.html"
-                    class="btn btn-outline-secondary"
-                  >
+                  <a href="../../Index.html" class="btn btn-outline-secondary">
                     <i class="fa fa-arrow-left me-1"></i> Quay lại
                   </a>
+                  <!-- <button id="btnAddToCart" class="btn btn-primary mt-3"> -->
+                  <a class="btn btn-danger" id="btnAddToCart">
+                    <i class="fa fa-cart-plus me-1"></i> Thêm vào giỏ hàng
+                  </a>
+                  <!-- Label hiển thị thông tin -->
+                  <span id="addToCartInfo" class="text-warning fw-bold p-3">hello</span>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+      <!-- POPUP ADD TO CART -->
+      <div id="popupAddCart" class="popup-overlay">
+        <div class="popup-box">
+          <h5>Nhập số lượng</h5>
+
+          <p>Số lượng tối đa: <span id="maxQty"></span></p>
+
+          <input
+            type="number"
+            id="inputQty"
+            class="form-control mb-3"
+            min="1"
+            value="1"
+          />
+
+          <div class="d-flex justify-content-end gap-2">
+            <button id="btnCancel" class="btn btn-secondary">Hủy</button>
+            <button id="btnConfirmAdd" class="btn btn-success">Thêm</button>
           </div>
         </div>
       </div>
@@ -216,7 +273,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
- // DOM
+      // DOM
       const suppliers_menu = document.getElementById("suppliers_menu");
       const login = document.getElementById("login");
       const profile = document.getElementById("profile");
@@ -227,85 +284,174 @@
       const token = sessionStorage.getItem("token");
       const username = sessionStorage.getItem("username");
       const role = sessionStorage.getItem("role");
+      const userId = sessionStorage.getItem("id");
       if (token) {
-        login.setAttribute("href","./Profile.html")
-        textLogin.innerText="Log out";
-        textUserName.innerText="Xin chào "+username;
-       
-      } 
-
+        login.setAttribute("href", "./Profile.html");
+        textLogin.innerText = "Log out";
+        textUserName.innerText = "Xin chào " + username;
+      }
 
       // show list suppliers
       fetch("http://localhost:8080/api/public/suppliers")
-      .then(data=>data.json())
-      .then(resp=>{
-        if(resp.status=200){
-        resp.data.forEach(supplier => {
-          const li= document.createElement("li");
-          li.setAttribute("class","nav-item mb-2")
-          const a= document.createElement("a");
-          a.setAttribute("class","nav-link text-dark text-start")
-          a.setAttribute("href", `../Suppliers/supplierShop.html?id=${supplier.id}&shopName=${supplier.name}`);
-          a.innerText=supplier.name
-          li.appendChild(a);
-          suppliers_menu.appendChild(li);
+        .then((data) => data.json())
+        .then((resp) => {
+          if ((resp.status = 200)) {
+            resp.data.forEach((supplier) => {
+              const li = document.createElement("li");
+              li.setAttribute("class", "nav-item mb-2");
+              const a = document.createElement("a");
+              a.setAttribute("class", "nav-link text-dark text-start");
+              a.setAttribute(
+                "href",
+                `../Suppliers/supplierShop.html?id=${supplier.id}&shopName=${supplier.name}`,
+              );
+              a.innerText = supplier.name;
+              li.appendChild(a);
+              suppliers_menu.appendChild(li);
+            });
+          }
         });
-        }
-      })
-      // 
-       const API_BASE = "http://localhost:8080/api/user/products/allusers";
+      //
 
-    document.addEventListener("DOMContentLoaded", () => {
-        const productId =
-            new URLSearchParams(window.location.search).get("id");
+      const API_BASE = "http://localhost:8080/api/user/products/allusers";
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const productId = new URLSearchParams(window.location.search).get("id");
         if (!productId) {
-            alert("Không tìm thấy sản phẩm");
-            return;
+          alert("Không tìm thấy sản phẩm");
+          return;
         }
         loadProductDetail(productId);
-    });
+      });
 
-    async function loadProductDetail(id) {
+      async function loadProductDetail(id) {
         const response = await fetch(`${API_BASE}/${id}`, {
-            headers: {
-                Authorization: "Bearer " + token
-            }
+          headers: {
+            Authorization: "Bearer " + token,
+          },
         });
         const res = await response.json();
         renderProduct(res.data);
-    }
+        sessionStorage.setItem("productDetail", JSON.stringify(res.data));
+      }
 
-    function renderProduct(p) {
+      function renderProduct(p) {
         document.getElementById("name").innerText = p.name ?? "N/A";
         document.getElementById("category").innerText = p.category ?? "N/A";
-        document.getElementById("price").innerText = p.price ? p.price.toLocaleString("vi-VN") + " VND" : "0 VND";
+        document.getElementById("price").innerText = p.price
+          ? p.price.toLocaleString("vi-VN") + " VND"
+          : "0 VND";
         document.getElementById("quantity").innerText = p.quantity ?? 0;
         document.getElementById("status").innerHTML =
-            `<span class="badge bg-${p.status === 'ACTIVE' ? 'success' : 'danger'}">
+          `<span class="badge bg-${p.status === "ACTIVE" ? "success" : "danger"}">
                 ${p.status ?? "UNKNOWN"}
             </span>`;
-        document.getElementById("description").innerText = p.description ?? "Không có mô tả";
+        document.getElementById("description").innerText =
+          p.description ?? "Không có mô tả";
 
         renderCarousel(p.imageUrls);
-    }
+      }
 
-    function renderCarousel(images) {
-        const carouselInner =
-            document.getElementById("carouselInner");
+      function renderCarousel(images) {
+        const carouselInner = document.getElementById("carouselInner");
         if (!images || images.length === 0) {
-            carouselInner.innerHTML = `
+          carouselInner.innerHTML = `
                 <div class="carousel-item active">
                     <img src="https://via.placeholder.com/600x400"
                          class="d-block w-100">
                 </div>`;
-            return;
+          return;
         }
-        carouselInner.innerHTML = images.map((img, index) => `
+        carouselInner.innerHTML = images
+          .map(
+            (img, index) => `
             <div class="carousel-item ${index === 0 ? "active" : ""}">
                 <img src="${img}" class="d-block w-100">
             </div>
-        `).join("");
-    }
+        `,
+          )
+          .join("");
+      }
+      // XU ly btn dat hang
+      const btnAddToCart = document.getElementById("btnAddToCart");
+      const popup = document.getElementById("popupAddCart");
+      const btnCancel = document.getElementById("btnCancel");
+      const btnConfirm = document.getElementById("btnConfirmAdd");
+      const inputQty = document.getElementById("inputQty");
+      const maxQtySpan = document.getElementById("maxQty");
+
+      //   load product detail
+      const productDetail = JSON.parse(sessionStorage.getItem("productDetail")); 
+      maxQtySpan.innerText = productDetail.quantity;
+      // check spham co thong tin dat hang khong
+      const addToCartInfo=document.getElementById("addToCartInfo");
+      // get ID
+      const params = new URLSearchParams(window.location.search);
+      const productId = params.get("id");
+
+      //   // Mở popup
+      btnAddToCart.onclick = () => {
+        if (!token) {
+          alert("Need login to purchase");
+        } else if (role !== "USER" && role !== "CUSTOMER") {
+          alert("Only customer can purchase");
+        } else {
+          popup.style.display = "flex";
+        }
+      };
+
+      //   // Đóng popup
+      btnCancel.onclick = () => {
+        popup.style.display = "none";
+      };
+      
+      
+      
+      
+      
+      const url = "http://localhost:8080/api/public/cart/add";
+      const CartAPI = {
+        addToCart: async function (customerId, productId, quantity) {
+          const data = {
+            customerId: customerId,
+            productId: productId,
+            quantity: quantity,
+          };
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Server error:", errorText);
+            throw new Error("Server returned error " + response.status);
+          }
+          return response.json();
+        },
+      };
+      //   // Xác nhận thêm vào giỏ
+      btnConfirm.onclick = async () => {
+        // them function khi click thi check da login hay chua. neu chua thi redirect toi
+
+        maxQuantity = productDetail.quantity;
+        customerId = Number(userId);
+        const quantity = Number(parseInt(inputQty.value));
+
+        if (quantity < 1 || quantity > maxQuantity) {
+          alert("Số lượng không hợp lệ!");
+          return;
+        }
+        console.log(customerId, productId, quantity);
+        const result = await CartAPI.addToCart(customerId, productId, quantity);
+        alert("Đã thêm vào giỏ hàng!");
+
+        popup.style.display = "none";
+      };
     </script>
   </body>
 </html>

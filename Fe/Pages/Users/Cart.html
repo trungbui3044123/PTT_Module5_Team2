@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+</head>
+<body>
+    <main>
+         <!-- Header -->
+      <header class="border-bottom shadow-sm">
+        <div class="bg-dark bg-gradient">
+          <nav class="navbar navbar-expand-lg navbar-dark py-3">
+            <!-- Nút toggle trên mobile -->
+            <button
+              class="navbar-toggler"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#mainNav"
+            >
+              <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Menu -->
+            <div class="collapse navbar-collapse" id="mainNav">
+              <!-- Logo -->
+              <a class="navbar-brand fw-bold me-4" href="../../Index.html">
+                <i class="fa-solid fa-store"></i> Team2-Shop
+              </a>
+              <ul
+                class="navbar-nav ms-auto mb-2 mb-lg-0 text-white"
+                id="leftTopUl"
+              >
+                <li class="nav-item">
+                  <a
+                    class="nav-link"
+                    href="./Pages/Users/registerUser.html"
+                    id="profile"
+                  >
+                    <i class="fa-solid fa-user"></i>
+                    <span id="textUserName">Tạo tài khoản</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="login" href="../../Login.html">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                    <span id="textLogin">Log in</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </nav>
+        </div>
+
+      </header>
+      <section>
+        <h1 class="m-3 text-center">Giỏ hàng</h1>
+       <p><i class="text-danger p-2">*Trở lại details sản phẩm để sửa số lượng sản phẩm cần order</i></p>
+<article class="container py-4">
+    <div class="row">
+        
+        <!-- LEFT: CART ITEMS -->
+        <div id="cart" class="col-lg-9 row g-3">
+            <!-- JS sẽ render sản phẩm vào đây -->
+        </div>
+
+        <!-- RIGHT: CART SUMMARY -->
+        <div class="col-lg-3 g-4">
+            <div class="card p-3 mb-3">
+                <h5 class="fw-bold">Thông tin giỏ hàng</h5>
+                <p>Tổng tiền: <span id="totalAmount" class="fw-bold text-danger"></span></p>
+                <p>Tổng loại sản phẩm: <span id="totalProducts"></span></p>
+                <p>Tổng số sản phẩm: <span id="totalQuantity"></span></p>
+            </div>
+
+            <div class="card p-3 mb-3">
+                <h5 class="fw-bold">Thông tin khách hàng</h5>
+                <p>Email: <span id="cusEmail"></span></p>
+                <p>Tên khách: <span id="cusName"></span></p>
+                <p>Điện thoại: <span id="cusPhone"></span></p>
+                <p>Địa chỉ: <span id="shipAddress"></span></p>
+              
+            </div>
+
+            <button class="btn btn-primary w-100 mb-2">Đặt hàng</button>
+            <button id="clearCartBtn" class="btn btn-outline-danger w-100">Xóa giỏ hàng</button>
+        </div>
+    </div>
+</article>
+      </section>
+    </main>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+   
+   <script>
+    // Logged in ?
+      const token = sessionStorage.getItem("token");
+      const username = sessionStorage.getItem("username");
+      const role = sessionStorage.getItem("role");
+      const userId = sessionStorage.getItem("id");
+      // show UI with logged in/ not logged in users
+      if(token&&role==="CUSTOMER"||role==="USER"){
+        textLogin.innerText="Log out";
+        textUserName.innerText="Xin chào "+username;
+        profile.setAttribute("href","./Pages/Users/Profile.html")
+      }
+
+// Render cart items
+function renderCart(cart) {
+    const cartContainer = document.getElementById("cart");
+    cartContainer.innerHTML = "";
+
+    let totalAmount = 0;
+    let totalQuantity = 0;
+if (!cart.items || cart.items.length === 0) {
+    cartContainer.innerHTML = `<h3>Không có giỏ hàng</h3>`;
+   return; // dừng luôn
+}
+    cart.items.forEach(item => {
+        const product = item.product;
+        const price = product.price * item.quantity;
+        totalAmount += price;
+        totalQuantity += item.quantity;
+
+        const card = `
+           <div class="col-12">
+    <div class="card shadow-sm mb-3" style="height: 250px; max-width: 100%;">
+        <div class="row g-0 h-100">
+
+            <!-- LEFT: IMAGE -->
+            <div class="col-4 d-flex align-items-center justify-content-center">
+                <img src="${product.images[0].imageUrl}" 
+                     alt="${product.name}" 
+                     class="img-fluid rounded"
+                     style="width: 250px; height: 200px; object-fit: cover;">
+            </div>
+
+            <!-- RIGHT: PRODUCT INFO -->
+            <div class="col-8">
+                <div class="card-body py-2">
+
+                    <p><strong>Tên sản phẩm:</strong> ${product.name}</p>
+                    <p><strong>Mô tả:</strong> ${product.description.substring(0, 120)}...</p>
+                    <p><strong>Giá:</strong> ${product.price.toLocaleString()} VND</p>
+                    <p><strong>Số lượng sản phẩm:</strong> ${item.quantity}</p>
+
+                    <button class="btn btn-outline-danger btn-sm mt-2" onclick="remove(${product.id})">Bỏ khỏi giỏ hàng</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+        `;
+
+        cartContainer.innerHTML += card;
+    });
+
+    // Summary
+    document.getElementById("totalAmount").textContent = totalAmount.toLocaleString() + " VND";
+    document.getElementById("totalProducts").textContent = cart.items.length;
+    document.getElementById("totalQuantity").textContent = totalQuantity;
+
+    // Customer info
+    document.getElementById("cusEmail").textContent = cart.customer.email;
+    document.getElementById("cusName").textContent = cart.customer.name;
+    document.getElementById("cusPhone").textContent = cart.customer.phone;
+    document.getElementById("shipAddress").value = cart.customer.address || "";
+}
+
+// Clear cart button
+document.getElementById("clearCartBtn").addEventListener("click", () => {
+    if(confirm("Bạn có muốn xóa giỏ hàng này không")){
+      fetch(`http://localhost:8080/api/public/cart/clear/${userId}`,{
+        method:`Delete`
+      })
+      .then(resp=>resp.text())
+      .then(data=>{
+        alert("Xóa giỏ hàng thành công!!!");
+        location.reload();
+        console.log(data);
+    })
+    };
+});
+
+// Init
+
+fetch(`http://localhost:8080/api/public/cart/${userId}`)
+.then(resp=>resp.json())
+.then(data=>{
+  console.log(data);
+
+
+    const items= data.items;
+    const customer=data.customer;
+    renderCart(data);       
+})
+   
+function remove(productId) {
+    if (!confirm("Bạn có muốn xóa sản phẩm này khỏi giỏ hàng không?")) return;
+
+    fetch(`http://localhost:8080/api/public/cart/remove?customerId=${userId}&productId=${productId}`, {
+        method: "DELETE"
+    })
+    .then(resp => resp.text())
+    .then(msg => {
+        alert("Đã xóa sản phẩm khỏi giỏ hàng");
+        console.log(msg);
+
+        // Reload lại giỏ hàng
+       location.reload();
+    })
+    .catch(err => console.error(err));
+}
+   
+   
+   
+   </script>
+</body>
+</html>

@@ -69,6 +69,7 @@
       sessionStorage.removeItem("role");
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("username");
+      sessionStorage.removeItem("id");
 
       document
         .getElementById("loginForm")
@@ -87,21 +88,20 @@
           })
             .then((result) => result.json())
             .then((resp) => {
-              console.log(resp);
-
               if (resp.status === 200) {
                 // Lưu token nếu BE trả về
                 if (resp.data.jwt) {
                   sessionStorage.setItem("token", resp.data.jwt);
+                  sessionStorage.setItem("id", resp.data.id);
                   sessionStorage.setItem("username", resp.data.username);
                   sessionStorage.setItem("role", resp.data.role);
                 }
-                if ("ADMIN" === resp.data.role && resp.data.enabled) {
+                if ("ADMIN" === resp.data.role && resp.data.isEnable) {
                   window.location.href = "./Pages/Admin/index.html";
-                } else if (!resp.data.enabled) {
+                } else if (!resp.data.isEnable) {
                   document.getElementById("error").innerHTML =
                     "User has been banned.Can not not login";
-                } else if("SUPPLIER" === resp.data.role && resp.data.enabled){
+                } else if("SUPPLIER" === resp.data.role && resp.data.isEnable){
                   window.location.href = "./Pages/Suppliers/index.html";
                 }
                 else {

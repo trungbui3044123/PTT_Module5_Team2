@@ -71,9 +71,10 @@ public class UserController {
                 String jwt = jwtTokenProvider.generateToken(authentication);
 
                 CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-
+                
                 LoginResponse data = new LoginResponse(
                                 jwt,
+                                userDetails.getId(),
                                 userDetails.getUsername(),
                                 userDetails.getUserEntity().getRole().name(),
                                 userDetails.isEnabled());
