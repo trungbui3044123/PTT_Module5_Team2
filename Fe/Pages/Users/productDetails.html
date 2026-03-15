@@ -239,7 +239,7 @@
                     <i class="fa fa-cart-plus me-1"></i> Thêm vào giỏ hàng
                   </a>
                   <!-- Label hiển thị thông tin -->
-                  <span id="addToCartInfo" class="text-warning fw-bold p-3">hello</span>
+                  <p id="addToCartInfo" class="text-warning fw-bold p-3"></p>
                 </div>
               </div>
             </div>
@@ -252,6 +252,8 @@
           <h5>Nhập số lượng</h5>
 
           <p>Số lượng tối đa: <span id="maxQty"></span></p>
+          <p>Số lượng trước đã đặt: <span id="preOrder">0</span></p>
+          <p><i>*** Input để thêm số lượng đặt</i></p>
 
           <input
             type="number"
@@ -264,6 +266,13 @@
           <div class="d-flex justify-content-end gap-2">
             <button id="btnCancel" class="btn btn-secondary">Hủy</button>
             <button id="btnConfirmAdd" class="btn btn-success">Thêm</button>
+            <button
+              id="btnEditCartItem"
+              class="btn btn-warning"
+              style="display: none"
+            >
+              Sửa số lượng
+            </button>
           </div>
         </div>
       </div>
@@ -377,17 +386,13 @@
       const popup = document.getElementById("popupAddCart");
       const btnCancel = document.getElementById("btnCancel");
       const btnConfirm = document.getElementById("btnConfirmAdd");
+      const btnEditCartItem = document.getElementById("btnEditCartItem");
       const inputQty = document.getElementById("inputQty");
       const maxQtySpan = document.getElementById("maxQty");
 
       //   load product detail
-      const productDetail = JSON.parse(sessionStorage.getItem("productDetail")); 
+      const productDetail = JSON.parse(sessionStorage.getItem("productDetail"));
       maxQtySpan.innerText = productDetail.quantity;
-      // check spham co thong tin dat hang khong
-      const addToCartInfo=document.getElementById("addToCartInfo");
-      // get ID
-      const params = new URLSearchParams(window.location.search);
-      const productId = params.get("id");
 
       //   // Mở popup
       btnAddToCart.onclick = () => {
@@ -404,12 +409,9 @@
       btnCancel.onclick = () => {
         popup.style.display = "none";
       };
-      
-      
-      
-      
-      
-      const url = "http://localhost:8080/api/public/cart/add";
+
+      const urlAdd = "http://localhost:8080/api/public/cart/add";
+      const urlUpdate = "http://localhost:8080/api/public/cart/update";
       const CartAPI = {
         addToCart: async function (customerId, productId, quantity) {
           const data = {
@@ -417,7 +419,7 @@
             productId: productId,
             quantity: quantity,
           };
-          const response = await fetch(url, {
+          const response = await fetch(urlAdd, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -433,8 +435,55 @@
           }
           return response.json();
         },
+        editCartItem: async function (customerId, productId, quantity) {
+          const data = {
+            customerId: customerId,
+            productId: productId,
+            quantity: quantity,
+          };
+          const response = await fetch(urlUpdate, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token,
+            },
+            body: JSON.stringify(data),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("Server error:", errorText);
+            throw new Error("Server returned error " + response.status);
+          }
+          return response.json();
+        },
       };
-      //   // Xác nhận thêm vào giỏ
+
+      // get ID
+      const params = new URLSearchParams(window.location.search);
+      const productId = params.get("id");
+
+      //  Lấy thông tin order trc đó
+      fetch(`http://localhost:8080/api/public/cart/${userId}`)
+        .then((resp) => resp.json())
+        .then((data) => {
+          sessionStorage.setItem("CartInfo", JSON.stringify(data.items));
+        });
+      const cartInfo = JSON.parse(sessionStorage.getItem("CartInfo"));
+      const cartInfoLabel = document.getElementById("addToCartInfo");
+      const preOrder = document.getElementById("preOrder");
+
+      if (Array.isArray(cartInfo) && cartInfo.length > 0) {
+        cartInfo.forEach((CartItem) => {
+          if (CartItem.product.id === Number(productId)) {
+            cartInfoLabel.innerText = "Có trong giỏ hàng";
+            preOrder.innerText = CartItem.quantity;
+            btnEditCartItem.style.display = "block";
+          }
+        });
+      }
+
+      //    Xác nhận thêm vào giỏ
       btnConfirm.onclick = async () => {
         // them function khi click thi check da login hay chua. neu chua thi redirect toi
 
@@ -451,6 +500,42 @@
         alert("Đã thêm vào giỏ hàng!");
 
         popup.style.display = "none";
+        sessionStorage.removeItem("CartInfo");
+              fetch(`http://localhost:8080/api/public/cart/${userId}`)
+        .then((resp) => resp.json())
+        .then((data) => {
+          sessionStorage.setItem("CartInfo", JSON.stringify(data.items));
+        });
+        window.location.reload();
+      };
+      //  Xác nhận update số lượng
+      btnEditCartItem.onclick = async () => {
+        // them function khi click thi check da login hay chua. neu chua thi redirect toi
+
+        maxQuantity = productDetail.quantity;
+        customerId = Number(userId);
+        const quantity = Number(parseInt(inputQty.value));
+
+        if (quantity < 1 || quantity > maxQuantity) {
+          alert("Số lượng không hợp lệ!");
+          return;
+        }
+        console.log(customerId, productId, quantity);
+        const result = await CartAPI.editCartItem(
+          customerId,
+          productId,
+          quantity,
+        );
+        alert("Đã update số lượng  vào giỏ hàng!");
+
+        popup.style.display = "none";
+        sessionStorage.removeItem("CartInfo");
+              fetch(`http://localhost:8080/api/public/cart/${userId}`)
+        .then((resp) => resp.json())
+        .then((data) => {
+          sessionStorage.setItem("CartInfo", JSON.stringify(data.items));
+        });
+        window.location.reload();
       };
     </script>
   </body>

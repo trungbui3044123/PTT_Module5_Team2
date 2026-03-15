@@ -1,17 +1,26 @@
 package com.module5.team2.service.serviceImpl;
 
+import com.module5.team2.dto.request.OrderRequest;
 import com.module5.team2.dto.response.OrderItemResponse;
 import com.module5.team2.dto.response.OrderResponse;
 import com.module5.team2.dto.response.OrderSummaryResponse;
+import com.module5.team2.entity.Cart;
+import com.module5.team2.entity.CartItem;
 import com.module5.team2.entity.Order;
 import com.module5.team2.entity.OrderItem;
 import com.module5.team2.entity.ProductEntity;
+import com.module5.team2.entity.UserEntity;
 import com.module5.team2.enums.OrderStatus;
 import com.module5.team2.exception.BusinessException;
 import com.module5.team2.exception.ResourceNotFoundException;
 import com.module5.team2.repository.OrderRepository;
+import com.module5.team2.repository.ProductRepository;
+import com.module5.team2.repository.UserRepository;
+import com.module5.team2.service.service.CartService;
 import com.module5.team2.service.service.NotificationService;
 import com.module5.team2.service.service.OrderService;
+import com.module5.team2.service.service.UserService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +41,9 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final NotificationService notificationService;
+    private final CartService cartService;
+    private final UserRepository userRepository;
+    private final ProductRepository productRepository;
 
     @Override
     public Page<OrderSummaryResponse> getSupplierOrders(
@@ -169,7 +184,7 @@ public class OrderServiceImpl implements OrderService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private Order getOrder(Long orderId) {
+    public Order getOrder(Long orderId) {
         return orderRepository.findById(orderId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Không tìm thấy đơn hàng"));
@@ -200,4 +215,96 @@ public class OrderServiceImpl implements OrderService {
                 order
         );
     }
+
+    @Override
+@Transactional
+public List<Order> createOrder(Integer customerId, OrderRequest request) {
+
+    Cart cart = cartService.getCartByCustomer(customerId);
+
+    if (cart.getItems().isEmpty()) {
+        throw new BusinessException("Giỏ hàng trống");
+    }
+
+    UserEntity customer = userRepository.findById(customerId)
+            .orElseThrow(() -> new BusinessException("Không tìm thấy khách hàng"));
+
+    // Gom cart items theo supplier
+    Map<UserEntity, List<CartItem>> groupedBySupplier =
+            cart.getItems().stream().collect(Collectors.groupingBy(
+                    item -> item.getProduct().getSupplier()
+            ));
+
+    // Danh sách order sẽ trả về
+    List<Order> createdOrders = new ArrayList<>();
+
+    for (Map.Entry<UserEntity, List<CartItem>> entry : groupedBySupplier.entrySet()) {
+
+        UserEntity supplier = entry.getKey();
+        List<CartItem> supplierItems = entry.getValue();
+
+        Order order = new Order();
+        order.setCustomer(customer);
+        order.setSupplier(supplier);
+        order.setReceiverName(request.getReceiverName());
+        order.setReceiverPhone(request.getReceiverPhone());
+        order.setReceiverAddress(request.getReceiverAddress());
+        order.setStatus(OrderStatus.PENDING);
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (CartItem cartItem : supplierItems) {
+
+            ProductEntity product = cartItem.getProduct();
+
+            if (product.getQuantity() < cartItem.getQuantity()) {
+                throw new BusinessException("Sản phẩm " + product.getName() + " không đủ số lượng");
+            }
+
+            // Trừ tồn kho
+            product.setQuantity(product.getQuantity() - cartItem.getQuantity());
+            productRepository.save(product);
+
+            // Tạo OrderItem
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProduct(product);
+            orderItem.setQuantity(cartItem.getQuantity());
+
+            // Giá 1 sản phẩm
+            BigDecimal unitPrice = BigDecimal.valueOf(product.getPrice());
+            orderItem.setUnitPrice(unitPrice);
+
+            // Thành tiền
+            BigDecimal subtotal = unitPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
+            orderItem.setSubtotal(subtotal);
+
+            order.getItems().add(orderItem);
+
+            total = total.add(subtotal);
+        }
+
+        order.setTotalAmount(total);
+
+        Order savedOrder = orderRepository.save(order);
+        createdOrders.add(savedOrder); //  thêm vào list trả về
+
+        // Tạo thông báo cho supplier
+        notificationService.createNotification(
+                supplier,
+                "Có đơn hàng mới",
+                "Bạn có đơn hàng #" + savedOrder.getId() + " từ khách " + customer.getName(),
+                "ORDER_NEW",
+                savedOrder
+        );
+    }
+
+    // Xóa giỏ hàng sau khi tạo đơn
+    cartService.clearCart(customerId);
+
+    return createdOrders; //  trả về danh sách tất cả đơn hàng
+}
+
+
+// end
 }
