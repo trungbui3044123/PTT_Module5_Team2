@@ -19,7 +19,6 @@ import com.module5.team2.repository.UserRepository;
 import com.module5.team2.service.service.CartService;
 import com.module5.team2.service.service.NotificationService;
 import com.module5.team2.service.service.OrderService;
-import com.module5.team2.service.service.UserService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -89,7 +88,7 @@ public class OrderServiceImpl implements OrderService {
                 .createdAt(order.getCreatedAt())
                 .items(order.getItems().stream()
                         .map(item -> OrderItemResponse.builder()
-                                .productId(Long.valueOf(item.getProduct().getId()))
+                                .productId(Integer.valueOf(item.getProduct().getId()))
                                 .productName(item.getProduct().getName())
                                 .quantity(item.getQuantity())
                                 .unitPrice(item.getUnitPrice())
@@ -199,8 +198,8 @@ public class OrderServiceImpl implements OrderService {
             throw new BusinessException("Bạn không có quyền hủy đơn này");
         }
 
-        if (order.getStatus() != OrderStatus.SUCCESS) {
-            throw new BusinessException("Chỉ được hủy đơn đã xác nhận");
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new BusinessException("Chỉ được hủy đơn đang chờ");
         }
 
         order.setStatus(OrderStatus.CANCEL);
@@ -304,6 +303,40 @@ public List<Order> createOrder(Integer customerId, OrderRequest request) {
 
     return createdOrders; //  trả về danh sách tất cả đơn hàng
 }
+
+    @Override
+    public Page<OrderResponse> findByCustomer(Integer customerId, Pageable pageable) throws NullPointerException{
+         UserEntity customer = userRepository.findById(customerId)
+            .orElseThrow(() -> new BusinessException("Không tìm thấy khách hàng"));
+
+        Page<Order> response= orderRepository.findByCustomer(customer, pageable);
+       
+        return response.map(order->
+            OrderResponse.builder()
+                                .id(order.getId())
+                                .status(order.getStatus())
+                                .supplierName(order.getSupplier().getName())
+                                .receiverName(order.getReceiverName())
+                                .receiverPhone(order.getReceiverPhone())
+                                .receiverAddress(order.getReceiverAddress())
+                                .totalAmount(order.getTotalAmount())
+                                .rejectReason(order.getRejectReason())
+                                .createdAt(order.getCreatedAt())
+                                .items(
+                                    order.getItems().stream()
+                                        .map(item->OrderItemResponse.builder()
+                                        .productId(item.getProduct().getId())
+                                        .productName(item.getProduct().getName())
+                                        .quantity(item.getQuantity())
+                                        .unitPrice(item.getUnitPrice())
+                                        .subtotal(item.getSubtotal())
+                                        .build()
+                            )
+                            .toList()
+                        )
+                                .build()
+                            );
+    }
 
 
 // end

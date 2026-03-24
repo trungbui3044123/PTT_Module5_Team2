@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -160,6 +161,7 @@ public class ProductController {
         page,
         size
 );
+        
         Page<ProductResponse> data = productService.getByCateogries(category,pageable);
          return ResponseEntity.ok(
                 ApiResponse.<Page<ProductResponse>>builder()
@@ -169,6 +171,21 @@ public class ProductController {
                         .build()
         );
     }
+    
+    @GetMapping("/allusers/top5-selling")
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> findTop5BestSellingProducts(
+         @RequestParam("supplierId") Long supplierId) {
+        List<ProductResponse> data = productService.findTop5BestSellingProducts(supplierId);
+         return ResponseEntity.ok(
+                ApiResponse.<List<ProductResponse>>builder()
+                        .status(200)
+                        .message("Lấy danh sách top 5 sellin thành công")
+                        .data(data)
+                        .build()
+        );
+    }
+    
+    
     @GetMapping("/allusers/supplier/{id}")
     public ResponseEntity<ApiResponse<Page<ProductResponse>>> getSupplierShop(
         @RequestParam(defaultValue = "0") int page,

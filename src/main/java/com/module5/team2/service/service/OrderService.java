@@ -33,4 +33,6 @@ public interface OrderService {
     void cancelOrder(Long orderId, Integer customerId);
     List<Order> createOrder(Integer customerId, OrderRequest request);
     Order getOrder(Long orderId);
+    Page<OrderResponse> findByCustomer(Integer customerId, Pageable pageable);
+    
 }

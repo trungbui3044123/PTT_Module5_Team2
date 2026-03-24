@@ -1,6 +1,7 @@
 package com.module5.team2.repository;
 
 import com.module5.team2.entity.Order;
+import com.module5.team2.entity.UserEntity;
 import com.module5.team2.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,5 +24,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             LocalDateTime start,
             LocalDateTime end
     );
-
+    Page<Order> findByCustomer(UserEntity customer, Pageable pageable);
 }
