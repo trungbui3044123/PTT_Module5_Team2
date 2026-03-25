@@ -13,7 +13,7 @@ import java.util.List;
 public class OrderResponse {
     private Long id;
     private OrderStatus status;
-
+    private String supplierName;
     private String receiverName;
     private String receiverPhone;
     private String receiverAddress;
@@ -25,4 +25,5 @@ public class OrderResponse {
     private LocalDateTime createdAt;
 
     private List<OrderItemResponse> items;
+    private CouponResponse coupon;
 }

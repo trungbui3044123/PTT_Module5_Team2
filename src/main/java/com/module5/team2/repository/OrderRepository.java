@@ -2,9 +2,12 @@ package com.module5.team2.repository;
 
 import com.module5.team2.dto.response.ShopRevenueResponse;
 import com.module5.team2.entity.Order;
+import com.module5.team2.entity.UserEntity;
 import com.module5.team2.enums.OrderStatus;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -45,4 +48,5 @@ WHERE o.supplier.id = :supplierId
 AND o.status = com.module5.team2.enums.OrderStatus.SUCCESS
 """)
     BigDecimal getRevenueBySupplier(Integer supplierId);
+    Page<Order> findByCustomer(UserEntity customer, Pageable pageable);
 }

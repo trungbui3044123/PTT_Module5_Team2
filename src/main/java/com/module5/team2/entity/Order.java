@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.module5.team2.enums.OrderStatus;
 
 import jakarta.persistence.*;
@@ -27,6 +28,7 @@ public class Order {
     private Long id;
     @ManyToOne
     @JoinColumn(name = "customer_id")
+     @JsonIgnore
     private UserEntity customer;
     
     @ManyToOne
@@ -41,6 +43,11 @@ public class Order {
     private BigDecimal totalAmount;
     @Column(columnDefinition = "TEXT")
     private String rejectReason;
+
+    @ManyToOne
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     @Builder.Default
