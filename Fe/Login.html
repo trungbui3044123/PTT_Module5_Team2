@@ -103,6 +103,8 @@
                     "User has been banned.Can not not login";
                 } else if("SUPPLIER" === resp.data.role && resp.data.isEnable){
                   window.location.href = "./Pages/Suppliers/index.html";
+                } else  if("STAFF" === resp.data.role && resp.data.isEnable){
+                  window.location.href = "./Pages/Staff/index.html";
                 }
                 else {
                   window.location.href = "./index.html";
