@@ -76,20 +76,21 @@ public class OrderController {
          }
 
 
-        @PostMapping("/create")
-        public ResponseEntity<List<OrderResponse>> createOrder(
-                        @RequestParam Integer customerId,
-                        @RequestBody OrderRequest request) {
+    @PostMapping("/create")
+    public ResponseEntity<List<OrderResponse>> createOrder(
+            @RequestParam Integer customerId,
+            @RequestBody OrderRequest request
+    ) {
 
-                List<Order> orders = orderService.createOrder(customerId, request);
+        List<Order> orders = (List<Order>) orderService.createOrder(customerId, request);
 
-                // Convert sang DTO để tránh trả về entity thô
-                List<OrderResponse> response = orders.stream()
-                                .map(this::toResponse)
-                                .collect(Collectors.toList());
+        // Convert sang DTO để tránh trả về entity thô
+        List<OrderResponse> response = orders.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
 
-                return ResponseEntity.ok(response);
-        }
+        return ResponseEntity.ok(response);
+    }
 
         private OrderResponse toResponse(Order order) {
                 return OrderResponse.builder()
