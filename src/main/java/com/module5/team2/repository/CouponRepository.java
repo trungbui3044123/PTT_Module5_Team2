@@ -21,4 +21,6 @@ public interface CouponRepository extends JpaRepository<Coupon,Long> {
 
     Page<Coupon> findBySupplierAndCodeContainingIgnoreCaseAndIsActive(
             UserEntity supplier, String code, Boolean isActive, Pageable pageable);
+
+    List<Coupon> findBySupplierAndIsActiveTrue(UserEntity supplier);
 }

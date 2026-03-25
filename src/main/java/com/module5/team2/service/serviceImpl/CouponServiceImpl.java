@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -111,6 +112,25 @@ public class CouponServiceImpl implements CouponService {
 //        }
 
         couponRepository.delete(coupon);
+    }
+
+    @Override
+    public List<CouponResponse> getCouponsBySupplierId(Long supplierId) {
+
+        UserEntity supplier = userRepository.findById(supplierId.intValue())
+                .orElseThrow(() -> new BusinessException("Không tìm thấy supplier"));
+
+        List<Coupon> coupons = couponRepository
+                .findBySupplierAndIsActiveTrue(supplier);
+
+        // lọc thêm: chưa hết hạn
+        return coupons.stream()
+                .filter(c -> c.getExpiresAt() == null ||
+                        c.getExpiresAt().isAfter(LocalDateTime.now()))
+                .filter(c -> c.getUsageLimit() == null ||
+                        c.getUsedCount() < c.getUsageLimit())
+                .map(this::mapToDTO)
+                .toList();
     }
 
     // ================= PRIVATE =================

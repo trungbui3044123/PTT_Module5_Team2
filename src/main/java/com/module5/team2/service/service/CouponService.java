@@ -22,4 +22,6 @@ public interface CouponService {
     void toggle(Long id);
 
     void delete(Long id);
+
+    List<CouponResponse> getCouponsBySupplierId(Long supplierId);
 }

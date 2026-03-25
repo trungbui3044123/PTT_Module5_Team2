@@ -31,6 +31,7 @@ public interface OrderService {
             LocalDateTime end
     );
     void cancelOrder(Long orderId, Integer customerId);
-    List<Order> createOrder(Integer customerId, OrderRequest request);
+//    List<Order> createOrder(Integer customerId, OrderRequest request);
+    Order createOrder(Integer customerId, OrderRequest request);
     Order getOrder(Long orderId);
 }
