@@ -102,16 +102,14 @@ public class CouponServiceImpl implements CouponService {
     // ================= DELETE =================
     @Override
     public void delete(Long id) {
-
         Coupon coupon = getCoupon(id);
 
-//        boolean isUsed = orderItemRepository.existsByCouponCode(coupon.getCode());
-//
-//        if (isUsed) {
-//            throw new BusinessException("Mã đã được sử dụng, không thể xóa");
-//        }
-
-        couponRepository.delete(coupon);
+        try {
+            couponRepository.delete(coupon);
+            couponRepository.flush(); // đảm bảo DB thực thi ngay để bắt constraint
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            throw new BusinessException("Mã đã được sử dụng trong đơn hàng, không thể xóa");
+        }
     }
 
     @Override

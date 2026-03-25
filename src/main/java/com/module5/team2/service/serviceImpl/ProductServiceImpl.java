@@ -6,13 +6,18 @@ import com.module5.team2.entity.ProductEntity;
 import com.module5.team2.entity.ProductImageEntity;
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.enums.ProductStatus;
+import com.module5.team2.enums.Role;
 import com.module5.team2.enums.Status;
+import com.module5.team2.exception.BusinessException;
 import com.module5.team2.exception.ResourceNotFoundException;
+import com.module5.team2.repository.OrderItemRepository;
 import com.module5.team2.repository.ProductRepository;
+import com.module5.team2.repository.UserRepository;
 import com.module5.team2.service.CloudinaryService;
 import com.module5.team2.service.service.ProductService;
+import com.module5.team2.service.service.UserService;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +34,8 @@ import java.util.Map;
 
 public class ProductServiceImpl implements ProductService {
         private final ProductRepository productRepository;
+        private final OrderItemRepository orderItemRepository;
+        private final UserRepository userRepository;
 
         private final CloudinaryService cloudinaryService;
 
@@ -234,13 +241,15 @@ public class ProductServiceImpl implements ProductService {
 
         @SuppressWarnings("null")
         @Override
-        public Page<ProductResponse> findByPriceAndStatus(Double price,String category, Pageable pageable) {
-                if (price == null || price<=0) {
+        public Page<ProductResponse> findByPriceAndStatus(Double price, String category, Pageable pageable) {
+                if (price == null || price <= 0) {
                         return Page.empty(pageable); // Trả về trang rỗng
                 }
 
-                Page<ProductEntity> page = productRepository.findByPriceLessThanAndStatusAndCategory(price, ProductStatus.ACTIVE, category,pageable);
-// findByPriceLessThanAndStatusAndCategory(Double price, ProductStatus status, String category, Pageable pageable);
+                Page<ProductEntity> page = productRepository.findByPriceLessThanAndStatusAndCategory(price,
+                                ProductStatus.ACTIVE, category, pageable);
+                // findByPriceLessThanAndStatusAndCategory(Double price, ProductStatus status,
+                // String category, Pageable pageable);
                 return page.map(product -> ProductResponse.builder()
                                 .id(product.getId())
                                 .name(product.getName())
@@ -260,8 +269,9 @@ public class ProductServiceImpl implements ProductService {
 
         @Override
         public Page<ProductResponse> findSupplierShop(Integer supplierId, Pageable pageable) {
-                Page<ProductEntity> page = productRepository.findBySupplier_IdAndStatus(supplierId, ProductStatus.ACTIVE, pageable);
-                 return page.map(product -> ProductResponse.builder()
+                Page<ProductEntity> page = productRepository.findBySupplier_IdAndStatus(supplierId,
+                                ProductStatus.ACTIVE, pageable);
+                return page.map(product -> ProductResponse.builder()
                                 .id(product.getId())
                                 .name(product.getName())
                                 .price(product.getPrice())
@@ -278,8 +288,37 @@ public class ProductServiceImpl implements ProductService {
                                 .build());
         }
 
-        
+        @Override
+        public List<ProductResponse> findTop5BestSellingProducts(Long supplierId) throws NullPointerException {
+                // Convert Long → Integer nếu userId là Integer
+                Integer id = supplierId.intValue();
 
+                UserEntity user = userRepository.findById(id).orElseThrow(
+                                () -> new BusinessException("Not found"));
+
+                if (user.getRole() != Role.SUPPLIER) {
+                        throw new BusinessException("Users to get top 5 best selling products must be supplier");
+                }
+
+                List<Object[]> list = orderItemRepository.findTop5BestSellingProducts(supplierId);
+
+                // Map Object[] → ProductResponse
+                List<ProductResponse> response = list.stream().map(item -> ProductResponse.builder()
+                                .id(((Number) item[0]).intValue()) // product_id
+                                .name((String) item[1]) // product_name
+                                .category((String) item[2]) // product_category
+                                .price(((Number) item[3]).doubleValue()) // product_price
+                                .quantity(((Number) item[4]).intValue()) // product_quantity
+                                .description((String) item[5]) // product_description
+                                .status((String) item[6]) // product_status
+                                .imageUrls(item[7] == null
+                                                ? List.of()
+                                                : List.of((String) item[7])) // product_imageUrls → List<String>
+                                .supplierName((String) item[8]) // product_supplierName
+                                .build()).toList();
+
+                return response;
+        }
 
         // end
 }

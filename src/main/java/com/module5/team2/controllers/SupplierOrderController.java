@@ -9,6 +9,8 @@ import com.module5.team2.service.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,7 +28,7 @@ public class SupplierOrderController {
     @GetMapping
     public ResponseEntity<ApiResponse<?>> getOrders(
             @RequestParam(required = false) OrderStatus status,
-            Pageable pageable,
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
 

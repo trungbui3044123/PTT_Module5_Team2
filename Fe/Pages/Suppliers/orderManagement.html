@@ -88,7 +88,7 @@
                         <span id="notificationBadge"
                               class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                               style="display: none;">
-            </span>
+                        </span>
                     </button>
 
                     <ul class="dropdown-menu dropdown-menu-end shadow"
@@ -128,6 +128,7 @@
                             <th>Người nhận</th>
                             <th>SĐT</th>
                             <th>Địa chỉ</th>
+                            <th>Mã giảm giá</th>
                             <th>Tổng tiền</th>
                             <th>Trạng thái</th>
                             <th>Ngày đặt hàng</th>
@@ -162,7 +163,6 @@
     </div>
 </div>
 
-<!-- ===== MODAL REJECT ===== -->
 <!-- ===== MODAL REJECT ===== -->
 <div class="modal fade" id="rejectModal">
     <div class="modal-dialog">
@@ -310,6 +310,14 @@
                     </span>
                 </td>
 
+                <td>
+                   ${
+                    o.coupon
+                        ? o.coupon.code + " (-" + o.coupon.value + "%)"
+                        : "Không sử dụng"
+                    }
+                </td>
+
                 <td class="fw-bold text-danger">
                     ${o.totalAmount.toLocaleString()} VND
                 </td>
@@ -415,6 +423,15 @@
                     <span class="badge-status status-${o.status}">
                         ${formatStatus(o.status)}
                     </span>
+                </p>
+
+                <p>
+                    <strong>Mã giảm giá:</strong>
+                    ${
+                        o.coupon
+                            ? o.coupon.code + " (-" + o.coupon.value + "%)"
+                            : "Không sử dụng mã khuyến mãi"
+                    }
                 </p>
 
                 ${o.rejectReason ? `

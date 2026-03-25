@@ -2,12 +2,9 @@ package com.module5.team2.entity;
 
 import java.math.BigDecimal;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,6 +24,7 @@ public class OrderItem {
     private Long id;
     @ManyToOne
     @JoinColumn(name = "order_id")
+     @JsonIgnore
     private Order order;
     @ManyToOne
     @JoinColumn(name = "product_id")

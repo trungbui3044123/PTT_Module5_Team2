@@ -34,4 +34,6 @@ public interface OrderService {
 //    List<Order> createOrder(Integer customerId, OrderRequest request);
     Order createOrder(Integer customerId, OrderRequest request);
     Order getOrder(Long orderId);
+    Page<OrderResponse> findByCustomer(Integer customerId, Pageable pageable);
+    
 }
