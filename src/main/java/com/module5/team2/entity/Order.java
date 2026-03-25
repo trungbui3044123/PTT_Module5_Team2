@@ -43,6 +43,11 @@ public class Order {
     private BigDecimal totalAmount;
     @Column(columnDefinition = "TEXT")
     private String rejectReason;
+
+    @ManyToOne
+    @JoinColumn(name = "coupon_id")
+    private Coupon coupon;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     @Builder.Default

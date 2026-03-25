@@ -110,6 +110,7 @@
                   Tổng tiền:
                   <span id="totalAmount" class="fw-bold text-danger"></span>
                 </p>
+                <p>Giảm giá: <span id="discountAmount" class="text-success">0 VND</span></p>
                 <p>Tổng loại sản phẩm: <span id="totalProducts"></span></p>
                 <p>Tổng số sản phẩm: <span id="totalQuantity"></span></p>
               </div>
@@ -179,6 +180,12 @@
       const popup = document.getElementById("popupAddCart");
       const btnCancel = document.getElementById("btnCancel");
       const btnConfirm = document.getElementById("btnConfirmAdd");
+
+      let selectedItems = [];
+      let selectedSupplier = null;
+      let selectedCoupon = null;
+      let couponsBySupplier = {};
+
       document.getElementById("receiverName").innerText=username
       // show UI with logged in/ not logged in users
       if (!token) {
@@ -202,66 +209,310 @@
         const cartContainer = document.getElementById("cart");
         cartContainer.innerHTML = "";
 
-        let totalAmount = 0;
+        // let totalAmount = 0;
         let totalQuantity = 0;
         if (!cart.items || cart.items.length === 0) {
           cartContainer.innerHTML = `<h3>Không có giỏ hàng</h3>`;
           return; // dừng luôn
         }
-        cart.items.forEach((item) => {
-          const product = item.product;
-          const price = product.price * item.quantity;
-          totalAmount += price;
-          totalQuantity += item.quantity;
 
-          const card = `
-           <div class="col-12">
-    <div class="card shadow-sm mb-3" style="height: 250px; max-width: 100%;">
-        <div class="row g-0 h-100">
+        const group = {};
 
-            <!-- LEFT: IMAGE -->
-            <div class="col-4 d-flex align-items-center justify-content-center">
-                <img src="${product.images[0].imageUrl}" 
-                     alt="${product.name}" 
-                     class="img-fluid rounded"
-                     style="width: 250px; height: 200px; object-fit: cover;">
-            </div>
+        cart.items.forEach(item => {
+          const supplierId = item.product.supplier.id;
 
-            <!-- RIGHT: PRODUCT INFO -->
-            <div class="col-8">
-                <div class="card-body py-2">
-
-                    <p><strong>Tên sản phẩm:</strong> ${product.name}</p>
-                    <p><strong>Mô tả:</strong> ${product.description.substring(0, 120)}...</p>
-                    <p><strong>Giá:</strong> ${product.price.toLocaleString()} VND</p>
-                    <p><strong>Số lượng sản phẩm:</strong> ${item.quantity}</p>
-
-                    <button class="btn btn-outline-danger btn-sm mt-2" onclick="remove(${product.id})">Bỏ khỏi giỏ hàng</button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-        `;
-
-          cartContainer.innerHTML += card;
+          if (!group[supplierId]) group[supplierId] = [];
+          group[supplierId].push(item);
         });
 
-        // Summary
-        document.getElementById("totalAmount").textContent =
-          totalAmount.toLocaleString() + " VND";
-        document.getElementById("totalProducts").textContent =
-          cart.items.length;
-        document.getElementById("totalQuantity").textContent = totalQuantity;
 
-        // Customer info
-        document.getElementById("cusEmail").textContent = cart.customer.email;
-        document.getElementById("cusName").textContent = cart.customer.name;
-        document.getElementById("cusPhone").textContent = cart.customer.phone;
-        document.getElementById("shipAddress").value =
-          cart.customer.address || "";
+//         cart.items.forEach((item) => {
+//           const product = item.product;
+//           const price = product.price * item.quantity;
+//           totalAmount += price;
+//           totalQuantity += item.quantity;
+//
+//           const card = `
+//            <div class="col-12">
+//     <div class="card shadow-sm mb-3" style="height: 250px; max-width: 100%;">
+//         <div class="row g-0 h-100">
+//
+//             <!-- LEFT: IMAGE -->
+//             <div class="col-4 d-flex align-items-center justify-content-center">
+//                 <img src="${product.images[0].imageUrl}"
+//                      alt="${product.name}"
+//                      class="img-fluid rounded"
+//                      style="width: 250px; height: 200px; object-fit: cover;">
+//             </div>
+//
+//             <!-- RIGHT: PRODUCT INFO -->
+//             <div class="col-8">
+//                 <div class="card-body py-2">
+//
+//                     <p><strong>Tên sản phẩm:</strong> ${product.name}</p>
+//                     <p><strong>Mô tả:</strong> ${product.description.substring(0, 120)}...</p>
+//                     <p><strong>Giá:</strong> ${product.price.toLocaleString()} VND</p>
+//                     <p><strong>Số lượng sản phẩm:</strong> ${item.quantity}</p>
+//
+//                     <button class="btn btn-outline-danger btn-sm mt-2" onclick="remove(${product.id})">Bỏ khỏi giỏ hàng</button>
+//                 </div>
+//             </div>
+//
+//         </div>
+//     </div>
+// </div>
+//         `;
+//
+//           cartContainer.innerHTML += card;
+
+        // });
+
+        for (const supplierId in group) {
+
+          const items = group[supplierId];
+
+          let html = `
+    <div class="col-12">
+      <div class="card shadow-sm p-3 mb-3">
+
+        <h5>Shop ID: ${supplierId}</h5>
+
+        <select id="coupon-${supplierId}"
+        class="form-select mb-3"
+        onchange="selectCoupon(${supplierId}, this.value)">
+          <option value="">-- Chọn mã giảm giá --</option>
+        </select>
+    `;
+
+          items.forEach(item => {
+
+            const product = item.product;
+            totalQuantity += item.quantity;
+
+            html += `
+      <div class="row align-items-center border-bottom py-2">
+
+        <div class="col-md-1">
+          <input type="checkbox"
+            onchange="toggleItem(${item.id}, ${supplierId}, ${product.price}, ${item.quantity}, this)">
+        </div>
+
+        <div class="col-md-3">
+          <img src="${product.images[0].imageUrl}"
+            class="img-fluid rounded"
+            style="height:100px;object-fit:cover;">
+        </div>
+
+        <div class="col-md-5">
+          <p><strong>${product.name}</strong></p>
+          <p>${product.price.toLocaleString()} VND</p>
+          <p>Số lượng: ${item.quantity}</p>
+        </div>
+
+        <div class="col-md-3">
+          <button class="btn btn-danger btn-sm"
+            onclick="remove(${product.id})">
+            Xóa
+          </button>
+        </div>
+
+      </div>
+      `;
+          });
+
+          html += `</div></div>`;
+          cartContainer.innerHTML += html;
+
+          loadCoupons(supplierId);
+        }
+
+        document.getElementById("totalQuantity").textContent = totalQuantity;
+        document.getElementById("totalAmount").innerText = "0 VND";
+        // customer info
+        if(cart.customer) {
+          document.getElementById("cusEmail").textContent = cart.customer.email;
+          document.getElementById("cusName").textContent = cart.customer.name;
+          document.getElementById("cusPhone").textContent = cart.customer.phone;
+
+          document.getElementById("totalProducts").textContent = cart.items.length;
+          document.getElementById("shipAddress").textContent =
+                  cart.customer.address || "Chưa có";
+        }
+
       }
+
+      function updateOrderButton() {
+        orderBtn.disabled = selectedItems.length === 0;
+      }
+
+      function loadCoupons(supplierId) {
+
+        fetch(`http://localhost:8080/api/public/coupons?supplierId=${supplierId}`)
+                .then(res => res.json())
+                .then(data => {
+
+                  couponsBySupplier[supplierId] = data;
+
+                  const select = document.getElementById(`coupon-${supplierId}`);
+
+                  data.forEach(c => {
+                    select.innerHTML += `
+                        <option value="${c.code}">
+                            ${c.code} - ${c.value}%
+                        </option>`;
+                  });
+                });
+      }
+
+      function toggleItem(id, supplierId, price, quantity, checkbox) {
+
+        if (selectedSupplier && selectedSupplier !== supplierId) {
+          if (!confirm("Đổi shop sẽ bỏ chọn sản phẩm cũ. Tiếp tục?")) {
+            checkbox.checked = false;
+            return;
+          }
+
+          selectedItems = [];
+          selectedCoupon = null;
+
+          // bỏ check tất cả checkbox
+          document.querySelectorAll("input[type=checkbox]").forEach(cb => cb.checked = false);
+
+          // reset select coupon
+          document.querySelectorAll("select").forEach(s => s.value = "");
+        }
+
+        selectedSupplier = supplierId;
+
+        const index = selectedItems.findIndex(i => i.id === id);
+
+        if (index > -1) {
+          selectedItems.splice(index, 1);
+        } else {
+          selectedItems.push({ id, price, quantity });
+        }
+
+        if (selectedItems.length === 0) {
+          selectedSupplier = null;
+          selectedCoupon = null;
+
+          document.querySelectorAll("select").forEach(s => s.value = "");
+          document.getElementById("totalAmount").innerText = "0 VND";
+          document.getElementById("discountAmount").innerText = "0 VND";
+        }
+
+        calculateTotal();
+        updateOrderButton();
+
+      }
+
+      function selectCoupon(supplierId, code) {
+
+        if (!selectedSupplier) {
+          alert("Hãy chọn sản phẩm trước");
+          document.getElementById(`coupon-${supplierId}`).value = "";
+          return;
+        }
+
+        if (selectedSupplier !== supplierId) {
+          alert("Coupon không thuộc shop đã chọn");
+          document.getElementById(`coupon-${supplierId}`).value = "";
+          return;
+        }
+
+        selectedCoupon = code;
+        calculateTotal();
+      }
+
+      function calculateTotal() {
+
+        let total = 0;
+
+        selectedItems.forEach(i => {
+          total += i.price * i.quantity;
+        });
+
+        let discount = 0;
+
+        if (selectedCoupon) {
+
+          const coupon = couponsBySupplier[selectedSupplier]
+                  ?.find(c => c.code === selectedCoupon);
+
+          if (coupon) {
+            if (total >= coupon.minOrderValue) {
+              discount = total * coupon.value / 100;
+              total -= discount;
+            } else {
+              alert("Chưa đủ giá trị tối thiểu để áp dụng mã");
+              selectedCoupon = null;
+
+              // reset dropdown
+              document.getElementById(`coupon-${selectedSupplier}`).value = "";
+              // calculateTotal();
+            }
+          }
+        }
+
+        document.getElementById("totalAmount").innerText =
+                total.toLocaleString() + " VND";
+
+        document.getElementById("discountAmount").innerText =
+                discount.toLocaleString() + " VND";
+      }
+
+      document.getElementById("orderForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        if (selectedItems.length === 0) {
+          alert("Chưa chọn sản phẩm");
+          return;
+        }
+
+        const formData = new FormData(this);
+
+        const data = {
+          receiverName: username,
+          receiverPhone: formData.get("receiverPhone"),
+          receiverAddress: formData.get("receiverAddress"),
+          cartItemIds: selectedItems.map(i => i.id),
+          couponCode: selectedCoupon
+        };
+
+        fetch(`http://localhost:8080/api/public/order/create?customerId=${userId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        })
+                .then(res => {
+                  if (!res.ok) {
+                    return res.text().then(msg => { throw new Error(msg); });
+                  }
+                  return res.json();
+                })
+                .then(() => {
+                  alert("Đặt hàng thành công");
+                  location.reload();
+                })
+                .catch(err => {
+                  alert("Lỗi: " + err.message);
+                });
+      });
+
+        // Summary
+      //   document.getElementById("totalAmount").textContent =
+      //     totalAmount.toLocaleString() + " VND";
+      //   document.getElementById("totalProducts").textContent =
+      //     cart.items.length;
+      //   document.getElementById("totalQuantity").textContent = totalQuantity;
+      //
+      //   // Customer info
+      //   document.getElementById("cusEmail").textContent = cart.customer.email;
+      //   document.getElementById("cusName").textContent = cart.customer.name;
+      //   document.getElementById("cusPhone").textContent = cart.customer.phone;
+      //   document.getElementById("shipAddress").value =
+      //     cart.customer.address || "";
+      // }
 
       // Clear cart button
       document.getElementById("clearCartBtn").addEventListener("click", () => {
@@ -285,6 +536,7 @@
         .then((data) => {
           console.log(data);
           renderCart(data);
+          updateOrderButton();
         });
 
       function remove(productId) {
@@ -310,6 +562,10 @@
 
       //   // Mở popup
       orderBtn.onclick = () => {
+        if (selectedItems.length === 0) {
+          alert("Vui lòng chọn sản phẩm");
+          return;
+        }
         if (!token) {
           alert("Need login to purchase");
         } else if (role !== "USER" && role !== "CUSTOMER") {
@@ -325,39 +581,39 @@
       };
 
       // Order
-document.getElementById("orderForm").addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  const formData = new FormData(this);
-
-  const data = {
-    receiverName: username,
-    receiverPhone: formData.get("receiverPhone"),
-    receiverAddress: formData.get("receiverAddress"),
-  };
-
-  console.log("Dữ liệu gửi API:", data);
-
-  // Gọi API createOrder
-  fetch(`http://localhost:8080/api/public/order/create?customerId=${userId}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  })
-    .then((res) => res.json())
-    .then((result) => {
-          console.log(result);
-
-    if (Array.isArray(result) && result.length > 0) {
-      // Redirect sang trang khác
-      window.location.href = "./OrderInfo.html";
-    } else {
-      alert("Tạo đơn hàng thất bại");
-    }
-    })
-    .catch((err) => console.error(err));
-
-});
+// document.getElementById("orderForm").addEventListener("submit", function (e) {
+//   e.preventDefault();
+//
+//   const formData = new FormData(this);
+//
+//   const data = {
+//     receiverName: username,
+//     receiverPhone: formData.get("receiverPhone"),
+//     receiverAddress: formData.get("receiverAddress"),
+//   };
+//
+//   console.log("Dữ liệu gửi API:", data);
+//
+//   // Gọi API createOrder
+//   fetch(`http://localhost:8080/api/public/order/create?customerId=${userId}`, {
+//     method: "POST",
+//     headers: { "Content-Type": "application/json" },
+//     body: JSON.stringify(data),
+//   })
+//     .then((res) => res.json())
+//     .then((result) => {
+//           console.log(result);
+//
+//     if (Array.isArray(result) && result.length > 0) {
+//       // Redirect sang trang khác
+//       window.location.href = "./OrderInfo.html";
+//     } else {
+//       alert("Tạo đơn hàng thất bại");
+//     }
+//     })
+//     .catch((err) => console.error(err));
+//
+// });
 
     </script>
   </body>

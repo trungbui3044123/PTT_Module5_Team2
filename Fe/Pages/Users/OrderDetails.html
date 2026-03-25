@@ -14,6 +14,12 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+
+    <style>
+        #discountAmount {
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
     <main>
@@ -81,17 +87,34 @@
             <div class="col-lg-3 g-4">
               <div class="card p-3 mb-3">
                 <h5 class="fw-bold">Thông tin đơn hàng</h5>
-                <p>
-                  Tổng tiền:
-                  <span id="totalAmount" class="fw-bold text-danger"></span>
-                </p>
+                  <p>
+                      Tổng tiền gốc:
+                      <span id="originalAmount"></span>
+                  </p>
+
+                  <p>
+                      Giảm giá:
+                      <span id="discountAmount" class="text-success"></span>
+                  </p>
+
+                  <p>
+                      Mã giảm giá:
+                      <span id="couponInfo" class="text-success"></span>
+                  </p>
+
+                  <hr>
+
+                  <p class="fw-bold">
+                      Thành tiền:
+                      <span id="totalAmount" class="text-danger fs-5"></span>
+                  </p>
                 <p>Tổng loại sản phẩm: <span id="totalProducts"></span></p>
                 <p>Tổng số sản phẩm: <span id="totalQuantity"></span></p>
               </div>
 
               <div class="card p-3 mb-3">
                 <h5 class="fw-bold">Thông tin khách hàng</h5>
-                <p>Email: <span id="cusEmail"></span></p>
+<!--                <p>Email: <span id="cusEmail"></span></p>-->
                 <p>Tên khách: <span id="cusName"></span></p>
                 <p>Điện thoại: <span id="cusPhone"></span></p>
                 <p>Địa chỉ: <span id="shipAddress"></span></p>
@@ -145,68 +168,119 @@
         return;
     }
 
-    let totalAmount = 0;
-    let totalQuantity = 0;
+     let originalTotal = 0;
+     let totalQuantity = 0;
 
     order.items.forEach(item => {
-        totalAmount += item.subtotal;
+        originalTotal += item.subtotal;
         totalQuantity += item.quantity;
 
         const card = `
-            <div class="col-12">
-                <div class="card shadow-sm mb-3 p-3">
+            <div class="col-12 mb-3">
+    <div class="card shadow-sm p-3">
+        <div class="row align-items-center">
 
-                    <p><strong>Tên sản phẩm:</strong> ${item.productName}</p>
-                    <p><strong>Giá:</strong> ${item.unitPrice.toLocaleString()} VND</p>
-                    <p><strong>Số lượng:</strong> ${item.quantity}</p>
-                    <p><strong>Tạm tính:</strong> ${item.subtotal.toLocaleString()} VND</p>
- <button 
+            <!-- Text sản phẩm -->
+            <div class="col-md-9">
+                <p><strong>Tên sản phẩm:</strong> ${item.productName}</p>
+                <p><strong>Giá:</strong> ${item.unitPrice.toLocaleString()} VND</p>
+                <p><strong>Số lượng:</strong> ${item.quantity}</p>
+                <p><strong>Tạm tính:</strong> ${item.subtotal.toLocaleString()} VND</p>
+                <button
                     class="btn btn-primary btn-sm mt-2"
                     onclick="goToProduct(${item.productId})"
                 >
                     Xem sản phẩm
                 </button>
-                </div>
             </div>
+
+            <!-- Ảnh sản phẩm -->
+            <div class="col-md-3 text-center">
+                <img src="${item.productImageUrl || 'https://via.placeholder.com/100'}"
+                     alt="${item.productName}"
+                     class="img-fluid rounded"
+                     style="max-width: 100px; max-height: 100px; object-fit: cover;">
+            </div>
+
+        </div>
+    </div>
+</div>
         `;
 
         cartContainer.innerHTML += card;
     });
 
+     let discount = 0;
+
+     if (order.coupon) {
+         discount = originalTotal - order.totalAmount;
+
+         document.getElementById("couponInfo").innerText =
+             order.coupon.code + " (-" + order.coupon.value + "%)";
+     } else {
+         document.getElementById("couponInfo").innerText =
+             "Không sử dụng mã khuyến mãi";
+     }
+
     // Summary
-    document.getElementById("totalAmount").textContent =
-        totalAmount.toLocaleString() + " VND";
+     document.getElementById("originalAmount").textContent =
+         originalTotal.toLocaleString() + " VND";
 
-    document.getElementById("totalProducts").textContent =
-        order.items.length;
+     document.getElementById("discountAmount").textContent =
+         "- " + discount.toLocaleString() + " VND";
 
-    document.getElementById("totalQuantity").textContent =
-        totalQuantity;
+     document.getElementById("totalAmount").textContent =
+         order.totalAmount.toLocaleString() + " VND";
 
-    // Customer info (từ order)
-    document.getElementById("cusName").textContent = order.receiverName;
-    document.getElementById("cusPhone").textContent = order.receiverPhone;
-    document.getElementById("shipAddress").value = order.receiverAddress || "";
+     document.getElementById("totalProducts").textContent =
+         order.items.length;
+
+     document.getElementById("totalQuantity").textContent =
+         totalQuantity;
+
+     document.getElementById("cusName").textContent = order.receiverName;
+     document.getElementById("cusPhone").textContent = order.receiverPhone;
+     document.getElementById("shipAddress").textContent =
+         order.receiverAddress || "";
 }
   
 
 
-const items = JSON.parse(sessionStorage.getItem("orderInfo"));
-const params = new URLSearchParams(window.location.search);
-const orderId = params.get("orderId");  // string
-   // Tìm đúng order theo ID
-const order = items.find(o => o.id == orderId); // dùng == để so sánh string/number
-console.log(order)
-if (order) {
-    renderCart(order);
-    if("PENDING"===order.status){
-     document.getElementById("cancleOrder").style.display = "block";
- 
-    }
-} else {
-    alert("Không tìm thấy đơn hàng với ID:", orderId);
-     window.location.href = `./OrderDetails.html`;
-}
+// const items = JSON.parse(sessionStorage.getItem("orderInfo"));
+// const params = new URLSearchParams(window.location.search);
+// const orderId = params.get("orderId");  // string
+//    // Tìm đúng order theo ID
+// const order = items.find(o => o.id == orderId); // dùng == để so sánh string/number
+// console.log(order)
+// if (order) {
+//     renderCart(order);
+//     if("PENDING"===order.status){
+//      document.getElementById("cancleOrder").style.display = "block";
+//
+//     }
+// } else {
+//     alert("Không tìm thấy đơn hàng với ID:", orderId);
+//      window.location.href = `./OrderDetails.html`;
+// }
+
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get("orderId");
+
+    fetch(`http://localhost:8080/api/public/order/${orderId}`, {
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+        }
+    })
+    .then(res => res.json())
+    .then(order => {
+        renderCart(order);
+
+        if (order.status === "PENDING") {
+            document.getElementById("cancleOrder").style.display = "block";
+        }
+    });
+
 function goToProduct(productId) {
     window.location.href = `./productDetails.html?id=${productId}`;
 }

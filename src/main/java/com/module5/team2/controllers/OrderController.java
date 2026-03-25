@@ -3,6 +3,7 @@ package com.module5.team2.controllers;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.module5.team2.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,10 +18,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.module5.team2.dto.request.OrderRequest;
-import com.module5.team2.dto.response.ApiResponse;
-import com.module5.team2.dto.response.OrderItemResponse;
-import com.module5.team2.dto.response.OrderResponse;
-import com.module5.team2.dto.response.ProductResponse;
 import com.module5.team2.entity.Order;
 import com.module5.team2.exception.BusinessException;
 import com.module5.team2.security.jwt.CustomUserDetails;
@@ -37,6 +34,24 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class OrderController {
 
         private final OrderService orderService;
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<OrderResponse> getOrderDetail(
+            @PathVariable Long orderId,
+            Authentication authentication
+    ) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        // Lấy order
+        Order order = orderService.getOrder(orderId);
+
+        // Check quyền
+        if (!order.getCustomer().getId().equals(userDetails.getId())) {
+            throw new BusinessException("Bạn không có quyền xem đơn hàng này");
+        }
+
+        return ResponseEntity.ok(toResponse(order));
+    }
 
         @GetMapping("/customer/{id}")
         public ResponseEntity<ApiResponse<Page<OrderResponse>>> getMethodName(
@@ -76,20 +91,22 @@ public class OrderController {
          }
 
 
-        @PostMapping("/create")
-        public ResponseEntity<List<OrderResponse>> createOrder(
-                        @RequestParam Integer customerId,
-                        @RequestBody OrderRequest request) {
+    @PostMapping("/create")
+    public ResponseEntity<OrderResponse> createOrder(
+            @RequestParam Integer customerId,
+            @RequestBody OrderRequest request
+    ) {
 
-                List<Order> orders = orderService.createOrder(customerId, request);
+        Order order = orderService.createOrder(customerId, request);
 
-                // Convert sang DTO để tránh trả về entity thô
-                List<OrderResponse> response = orders.stream()
-                                .map(this::toResponse)
-                                .collect(Collectors.toList());
+        // Convert sang DTO để tránh trả về entity thô
+//        List<OrderResponse> response = orders.stream()
+//                .map(this::toResponse)
+//                .collect(Collectors.toList());
 
-                return ResponseEntity.ok(response);
-        }
+//        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(toResponse(order));
+    }
 
         private OrderResponse toResponse(Order order) {
                 return OrderResponse.builder()
@@ -98,18 +115,23 @@ public class OrderController {
                                 .receiverName(order.getReceiverName())
                                 .receiverPhone(order.getReceiverPhone())
                                 .receiverAddress(order.getReceiverAddress())
+
                                 .totalAmount(order.getTotalAmount())
                                 .createdAt(order.getCreatedAt())
+                                .coupon(order.getCoupon() != null ? CouponResponse.builder()
+                                        .id(order.getCoupon().getId())
+                                        .code(order.getCoupon().getCode())
+                                        .value(order.getCoupon().getValue())
+                                        .build() : null)
                                 .items(
                                                 order.getItems().stream()
                                                                 .map(item -> OrderItemResponse.builder()
-                                                                                .productId(Integer.valueOf(item
-                                                                                                .getProduct().getId()))
-                                                                                .productName(item.getProduct()
-                                                                                                .getName())
+                                                                                .productId(item.getProduct().getId())
+                                                                                .productName(item.getProduct().getName())
                                                                                 .quantity(item.getQuantity())
                                                                                 .unitPrice(item.getUnitPrice())
                                                                                 .subtotal(item.getSubtotal())
+                                                                                .productImageUrl(item.getProduct().getImages().getFirst().getImageUrl())
                                                                                 .build())
                                                                 .collect(Collectors.toList()))
                                 .build();

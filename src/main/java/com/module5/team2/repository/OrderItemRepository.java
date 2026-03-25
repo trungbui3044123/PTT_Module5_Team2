@@ -41,5 +41,5 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
 """, nativeQuery = true)
 List<Object[]> findTop5BestSellingProducts(@Param("supplierId") Long supplierId);
 
-
+//    boolean existsByCouponCode(String couponCode);
 }
