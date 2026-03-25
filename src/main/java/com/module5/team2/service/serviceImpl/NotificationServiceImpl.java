@@ -3,6 +3,7 @@ package com.module5.team2.service.serviceImpl;
 import com.module5.team2.dto.response.NotificationResponse;
 import com.module5.team2.entity.Notification;
 import com.module5.team2.entity.Order;
+import com.module5.team2.entity.ReviewEntity;
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.exception.BusinessException;
 import com.module5.team2.exception.ResourceNotFoundException;
@@ -91,5 +92,20 @@ public class NotificationServiceImpl implements NotificationService {
                                 : null
                 )
                 .build();
+    }
+
+    @SuppressWarnings("null")
+@Override
+    public void createReviewNotify(UserEntity user, String title, String content, String type, ReviewEntity review) throws NullPointerException{
+       Notification notification = Notification.builder()
+                .user(user)
+                .review(review)
+                .title(title)
+                .content(content)
+                .type(type)
+                .build();
+
+        notificationRepository.save(notification);
+
     }
 }

@@ -199,7 +199,6 @@
                     </button>
                   </div>
                 </div>
-
                 <!-- PRODUCT INFO -->
                 <div class="col-md-6">
                   <h3 id="name" class="fw-bold mb-3"></h3>
@@ -240,6 +239,60 @@
                   </a>
                   <!-- Label hiển thị thông tin -->
                   <p id="addToCartInfo" class="text-warning fw-bold p-3"></p>
+                </div>
+              </div>
+              <!-- PRODUCT REVIEW SECTION -->
+              <div class="col-md-12 mt-5">
+                <div class="card shadow-sm p-4">
+                  <h4 class="fw-bold mb-3">Đánh giá sản phẩm</h4>
+
+                  <!-- FORM REVIEW -->
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Số sao (1–5)</label>
+                    <select
+                      class="form-select"
+                      id="rating"
+                      name="rating"
+                      required
+                    >
+                      <option value="">-- Chọn số sao --</option>
+                      <option value="1">1 sao</option>
+                      <option value="2">2 sao</option>
+                      <option value="3">3 sao</option>
+                      <option value="4">4 sao</option>
+                      <option value="5">5 sao</option>
+                    </select>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Nhận xét</label>
+                    <textarea
+                      class="form-control"
+                      id="comment"
+                      name="comment"
+                      rows="3"
+                      placeholder="Nhập nhận xét của bạn..."
+                    ></textarea>
+                  </div>
+
+                  <button
+                    type="submit"
+                    onclick="sendReview(event)"
+                    class="btn btn-primary"
+                  >
+                    Gửi đánh giá
+                  </button>
+
+                  <p
+                    id="reviewMessage"
+                    class="mt-3 fw-semibold text-success"
+                  ></p>
+
+                  <!-- LIST REVIEWS -->
+                  <h5 class="fw-bold mt-4">Các đánh giá gần đây</h5>
+                  <div id="reviewList" class="mt-3">
+                    <!-- Review sẽ được render bằng JS -->
+                  </div>
                 </div>
               </div>
             </div>
@@ -464,12 +517,22 @@
       const productId = params.get("id");
 
       //  Lấy thông tin order trc đó
-      fetch(`http://localhost:8080/api/public/cart/${userId}`)
-        .then((resp) => resp.json())
-        .then((data) => {
-          sessionStorage.setItem("CartInfo", JSON.stringify(data.items));
-        });
-      const cartInfo = JSON.parse(sessionStorage.getItem("CartInfo"));
+      if (userId > 0) {
+        fetch(`http://localhost:8080/api/public/cart/${userId}`)
+          .then((resp) => resp.json())
+          .then((data) => {
+            sessionStorage.setItem("CartInfo", JSON.stringify(data.items));
+          });
+      }
+
+     let raw = sessionStorage.getItem("CartInfo");
+
+if (!raw || raw === "undefined" || raw === "null") {
+    raw = "[]"; // fallback về mảng rỗng
+}
+
+const cartInfo = JSON.parse(raw);
+
       const cartInfoLabel = document.getElementById("addToCartInfo");
       const preOrder = document.getElementById("preOrder");
 
@@ -501,11 +564,11 @@
 
         popup.style.display = "none";
         sessionStorage.removeItem("CartInfo");
-              fetch(`http://localhost:8080/api/public/cart/${userId}`)
-        .then((resp) => resp.json())
-        .then((data) => {
-          sessionStorage.setItem("CartInfo", JSON.stringify(data.items));
-        });
+        fetch(`http://localhost:8080/api/public/cart/${userId}`)
+          .then((resp) => resp.json())
+          .then((data) => {
+            sessionStorage.setItem("CartInfo", JSON.stringify(data.items));
+          });
         window.location.reload();
       };
       //  Xác nhận update số lượng
@@ -530,13 +593,111 @@
 
         popup.style.display = "none";
         sessionStorage.removeItem("CartInfo");
-              fetch(`http://localhost:8080/api/public/cart/${userId}`)
-        .then((resp) => resp.json())
-        .then((data) => {
-          sessionStorage.setItem("CartInfo", JSON.stringify(data.items));
-        });
+        fetch(`http://localhost:8080/api/public/cart/${userId}`)
+          .then((resp) => resp.json())
+          .then((data) => {
+            sessionStorage.setItem("CartInfo", JSON.stringify(data.items));
+          });
         window.location.reload();
       };
+
+      // Gửi đánh giá
+      function sendReview(event){
+          const token = sessionStorage.getItem("token");
+          const role = sessionStorage.getItem("role");
+
+          // Kiểm tra login
+          if (!token) {
+              alert("Need login to comment review");
+              return;
+          }
+
+          // Kiểm tra role
+          if (role !== "USER" && role !== "CUSTOMER") {
+              alert("Only customer can review product");
+              return;
+          }
+
+          // Lấy productId từ URL
+          const params = new URLSearchParams(window.location.search);
+          const productId = Number(params.get("id"));
+
+          if (!productId) {
+              alert("Product ID not found");
+              return;
+          }
+
+          // Lấy userId từ session
+          const userId = Number(sessionStorage.getItem("id"));
+
+          if (!userId) {
+              alert("User ID not found");
+              return;
+          }
+
+          // Tạo JSON body
+          const body = {
+              rating: Number(document.getElementById("rating").value),
+              comment: document.getElementById("comment").value
+          };
+      // Gửi request JSON
+         fetch(
+              `http://localhost:8080/api/public/reviews/${productId}?userId=${userId}`,
+              {
+                  method: "POST",
+                  headers: {
+                      "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify(body)
+              }
+            )
+          .then(res=> res.json())
+          .then(res=>{
+            if (res.status===200) {
+              document.getElementById("reviewMessage").innerText = res.message;
+              parseReview();
+          } else {
+              document.getElementById("reviewMessage").innerText =
+                  res.message;
+          }
+          })
+//end
+      }
+
+      // Load danh sách review
+      function parseReview() {
+        const container = document.getElementById("reviewList");
+        container.innerHTML = "";
+        fetch(`http://localhost:8080/api/public/reviews/${productId}`)
+          .then((res) => res.json())
+          .then((res) => {
+            // Kiểm tra lỗi hoặc không có data
+            if (
+              res.status !== 200 ||
+              !Array.isArray(res.data) ||
+              res.data.length === 0
+            ) {
+              container.innerHTML = "Không có đánh giá";
+              return;
+            }
+            console.log(res);
+            // Lặp qua từng review
+            res.data.forEach((r) => {
+              const div = document.createElement("div");
+              div.classList.add("border", "rounded", "p-3", "mb-2");
+
+              div.innerHTML = `
+        <div class="fw-bold text-warning">⭐ ${r.rating}</div>
+        <div>${r.comment || "(Không có nhận xét)"}</div>
+        <small class="text-muted">Ngày: ${r.createdAt}</small><br>
+        <small class="text-muted">Người đánh giá: ${r.user.name}</small>
+      `;
+
+              container.appendChild(div);
+            });
+          });
+      }
+      parseReview();
     </script>
   </body>
 </html>

@@ -178,8 +178,11 @@
               data-bs-ride="carousel"
             >
               <div class="carousel-inner">
+                  <div class="carousel-inner" id="couponSlides">
+    <!-- JS sẽ render các slide vào đây -->
+  </div>
                 <!-- Slide 1 -->
-                <div class="carousel-item active">
+                <!-- <div class="carousel-item active">
                   <div class="coupon-slide bg-warning text-white p-2 rounded">
                     <h4 class="fw-bold">
                       <i class="fa-solid fa-ticket"></i> Giảm 20%
@@ -193,43 +196,8 @@
                       Copy mã
                     </button>
                   </div>
-                </div>
+                </div> -->
 
-                <!-- Slide 2 -->
-                <div class="carousel-item">
-                  <div class="coupon-slide bg-success text-white p-2 rounded">
-                    <h4 class="fw-bold">
-                      <i class="fa-solid fa-gift"></i> Freeship
-                    </h4>
-                    <p>Mã: <strong>FREESHIP</strong></p>
-                    <p>Cửa hàng: <strong> Suppliers B</strong></p>
-                    <button
-                      class="btn btn-light btn-sm"
-                      onclick="copyCoupon('FREESHIP')"
-                    >
-                      Copy mã
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Slide 3 -->
-                <div class="carousel-item">
-                  <div
-                    class="coupon-slide bg-dark bg-gradient text-white p-2 rounded"
-                  >
-                    <h4 class="fw-bold">
-                      <i class="fa-solid fa-bolt"></i> Giảm 50K
-                    </h4>
-                    <p>Mã: <strong>GIAM50K</strong></p>
-                    <p>Cửa hàng: <strong> Suppliers C</strong></p>
-                    <button
-                      class="btn btn-light btn-sm"
-                      onclick="copyCoupon('GIAM50K')"
-                    >
-                      Copy mã
-                    </button>
-                  </div>
-                </div>
               </div>
 
               <!-- Nút điều hướng -->
@@ -533,6 +501,48 @@ productList.innerHTML += `
       // Gọi lần đầu khi trang được tải
       fetchProducts();
       fetchtop5Products() ;
+
+      // Show mã giảm giá
+      function parseCoupon(){
+          const params = new URLSearchParams(window.location.search);
+          const supplierId = Number(params.get("id"));
+          const container = document.getElementById("couponSlides");
+          container.innerHTML = "";
+          if (!supplierId) {
+              alert("supplierId not found");
+          }
+          const url = `http://localhost:8080/api/public/coupons?supplierId=${supplierId}`;
+          fetch(url)
+          .then(resp=>resp.json())
+          .then(coupons=>{
+               if (!Array.isArray(coupons) || coupons.length === 0) {
+              container.innerHTML = `<div class="p-3">Không có mã giảm giá</div>`;
+             }
+              coupons.forEach((c, index) => {
+        const div = document.createElement("div");
+        div.classList.add("carousel-item");
+        if (index === 0) div.classList.add("active");
+
+    // Tạo màu random dạng hex (#RRGGBB)
+    const randomColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
+
+       div.innerHTML = `
+        <div class="coupon-slide text-white p-3 rounded" style="background-color: ${randomColor}">
+            <h4 class="fw-bold">
+                <i class="fa-solid fa-ticket"></i> Giảm ${c.value}%
+            </h4>
+            <p>Mã: <strong>${c.code}</strong></p>
+            <p>Đơn tối thiểu: <strong>${c.minOrderValue.toLocaleString()}đ</strong></p>
+            <p>HSD: <strong>${c.expiresAt}</strong></p>
+        </div>
+    `;
+
+        container.appendChild(div);
+    });
+          })
+      }
+ parseCoupon()
+      //end
     </script>
 </body>
 </html>
