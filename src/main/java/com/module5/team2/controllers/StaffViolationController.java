@@ -7,6 +7,7 @@ import com.module5.team2.dto.response.ViolationResponse;
 import com.module5.team2.entity.UserEntity;
 import com.module5.team2.service.service.StaffViolationService;
 import com.module5.team2.service.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,7 +26,7 @@ public class StaffViolationController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createViolation(
-            @RequestBody ViolationRequest request
+            @Valid @RequestBody ViolationRequest request
     ) {
         violationService.createViolation(request);
 

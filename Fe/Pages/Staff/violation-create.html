@@ -196,7 +196,14 @@
                 alert("Tạo violation thành công");
                 location.reload();
             } else {
-                throw new Error(result.message);
+                const errors = result.data;
+
+                let errorMsg = "";
+                for (let key in errors) {
+                    errorMsg += `${errors[key]}\n`;
+                }
+
+                throw new Error(errorMsg);
             }
 
         } catch (err) {

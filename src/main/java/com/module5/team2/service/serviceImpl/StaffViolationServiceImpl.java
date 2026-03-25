@@ -9,6 +9,7 @@ import com.module5.team2.repository.NoteRepository;
 import com.module5.team2.repository.UserRepository;
 import com.module5.team2.repository.ViolationRepository;
 import com.module5.team2.service.service.StaffViolationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,7 @@ public class StaffViolationServiceImpl implements StaffViolationService {
     private final ViolationRepository violationRepository;
 
     @Override
-    public void createViolation(ViolationRequest request) {
+    public void createViolation(@Valid ViolationRequest request) {
 
         UserEntity supplier = userRepository.findById(request.getSupplierId())
                 .orElseThrow(() -> new BusinessException("Supplier không tồn tại"));
