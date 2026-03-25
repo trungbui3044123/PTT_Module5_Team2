@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+    />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+<body>
+<main>
+    <div class="container-fluid">
+        <div class="row">
+
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 bg-dark text-white min-vh-100 p-3">
+                <h2 class="text-center mb-4">Staff Panel</h2>
+
+                <ul class="nav flex-column">
+                    <li class="nav-item mb-2">
+                        <a href="#" class="nav-link text-white">Dashboard</a>
+                    </li>
+
+                    <li class="nav-item mb-2">
+                        <a href="./violation-create.html" class="nav-link text-white">
+                            Create Violation
+                        </a>
+                    </li>
+
+                    <li class="nav-item mb-2">
+                        <a href="./violation-list.html" class="nav-link text-white">
+                            Violation List
+                        </a>
+                    </li>
+
+                    <li class="nav-item mb-2">
+                        <a href="./send-mail.html" class="nav-link text-white">
+                            Send Warning Mail
+                        </a>
+                    </li>
+
+                    <li class="nav-item mb-2">
+                        <a href="./revenue.html" class="nav-link text-white">Revenue</a>
+                    </li>
+
+                    <li class="nav-item mt-3">
+                        <a href="../../Login.html" class="btn btn-danger w-100">Logout</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Content -->
+
+            <div class="col-md-9 col-lg-10 p-4">
+
+                <div class="d-flex justify-content-end mb-2">
+                    <p class="fw-semibold text-secondary" id="username"></p>
+                </div>
+
+                <div class="card shadow p-4">
+                    <h4 class="mb-4">Tạo Violation</h4>
+
+                    <div id="error" class="text-danger mb-3"></div>
+
+                    <form id="violationForm">
+
+                        <!-- Customer -->
+                        <div class="mb-3">
+                            <label class="form-label">Chọn Customer (có thể bỏ trống)</label>
+                            <select id="customerId" class="form-select">
+                                <option value="">-- Không chọn --</option>
+                            </select>
+                        </div>
+
+                        <!-- Supplier -->
+                        <div class="mb-3">
+                            <label class="form-label">Chọn Supplier *</label>
+                            <select id="supplierId" class="form-select" required>
+                                <option value="">-- Chọn supplier --</option>
+                            </select>
+                        </div>
+
+                        <!-- Violation -->
+                        <div class="mb-3">
+                            <label class="form-label">Nội dung vi phạm *</label>
+                            <textarea id="violation" class="form-control" rows="4" required></textarea>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="mb-3">
+                            <label class="form-label">Mức độ vi phạm *</label>
+                            <select id="status" class="form-select" required>
+                                <option value="LOW">LOW</option>
+                                <option value="MEDIUM">MEDIUM</option>
+                                <option value="HIGH">HIGH</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">
+                            Tạo Violation
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+
+
+
+        </div>
+    </div>
+
+</main>
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    const token = sessionStorage.getItem("token");
+    const username = sessionStorage.getItem("username");
+    const role = sessionStorage.getItem("role");
+
+    if (!token || role !== "STAFF") {
+        window.location.href = "../../Login.html";
+    }
+
+    document.getElementById("username").innerHTML = `Xin chào, ${username}`;
+
+    async function loadUsers() {
+        try {
+            const res = await fetch("http://localhost:8080/api/staff/violations/users?size=100", {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            const data = await res.json();
+            const users = data.data.content;
+
+            const customerSelect = document.getElementById("customerId");
+            const supplierSelect = document.getElementById("supplierId");
+
+            users.forEach(u => {
+                if (u.role === "CUSTOMER") {
+                    customerSelect.innerHTML += `<option value="${u.id}">${u.username}</option>`;
+                }
+                if (u.role === "SUPPLIER") {
+                    supplierSelect.innerHTML += `<option value="${u.id}">${u.username}</option>`;
+                }
+            });
+
+            $('#customerId').select2({
+                placeholder: "Tìm customer...",
+                allowClear: true
+            });
+
+            $('#supplierId').select2({
+                placeholder: "Tìm supplier...",
+                allowClear: true
+            });
+
+        } catch (err) {
+            console.error("Lỗi load users:", err);
+        }
+    }
+
+    document.getElementById("violationForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const data = {
+            userId: document.getElementById("customerId").value || null,
+            supplierId: document.getElementById("supplierId").value,
+            violation: document.getElementById("violation").value,
+            status: document.getElementById("status").value
+        };
+
+        try {
+            const res = await fetch("http://localhost:8080/api/staff/violations", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+
+            if (result.status === 201) {
+                alert("Tạo violation thành công");
+                location.reload();
+            } else {
+                throw new Error(result.message);
+            }
+
+        } catch (err) {
+            document.getElementById("error").innerText = err.message;
+        }
+    });
+
+    loadUsers();
+
+
+</script>
+</body>
+</html>

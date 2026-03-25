@@ -18,7 +18,7 @@
 
             <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 bg-dark text-white min-vh-100 p-3">
-                <h2 class="text-center mb-4">Admin Panel</h2>
+                <h2 class="text-center mb-4">Staff Panel</h2>
 
                 <ul class="nav flex-column">
                     <li class="nav-item mb-2">
@@ -26,11 +26,21 @@
                     </li>
 
                     <li class="nav-item mb-2">
-                        <a href="./userList.html" class="nav-link text-white">List Users</a>
+                        <a href="./violation-create.html" class="nav-link text-white">
+                            Create Violation
+                        </a>
                     </li>
 
                     <li class="nav-item mb-2">
-                        <a href="./note_staff_list.html" class="nav-link text-white">Note</a>
+                        <a href="./violation-list.html" class="nav-link text-white">
+                            Violation List
+                        </a>
+                    </li>
+
+                    <li class="nav-item mb-2">
+                        <a href="./send-mail.html" class="nav-link text-white">
+                            Send Warning Mail
+                        </a>
                     </li>
 
                     <li class="nav-item mb-2">
@@ -110,7 +120,7 @@
     const username = sessionStorage.getItem("username");
     const role = sessionStorage.getItem("role");
 
-    if (!token || role !== "ADMIN") {
+    if (!token || role !== "STAFF") {
         window.location.href = "../../Login.html";
     }
 

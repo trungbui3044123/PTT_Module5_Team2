@@ -84,6 +84,13 @@
                 <div class="row">
                     <!-- Example Cards -->
                     <div class="col-md-4 mb-3">
+                        <div class="card shadow p-3">
+                            <h6>Tổng doanh thu</h6>
+                            <h3 id="totalRevenue">...</h3>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <h5 class="card-title">Users</h5>
@@ -133,6 +140,36 @@
     }
 
     document.getElementById("username").innerHTML=`Xin chào, ${username}`;
+
+    async function loadRevenue() {
+        try {
+            const res = await fetch("http://localhost:8080/api/revenue/supplier", {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            const result = await res.json();
+
+            // ⚠️ vì bạn đang dùng ApiResponse
+            const data = result.data;
+
+            document.getElementById("totalRevenue").innerText =
+                formatMoney(data.totalRevenue);
+
+        } catch (err) {
+            console.error("Lỗi load doanh thu:", err);
+
+            document.getElementById("totalRevenue").innerText = "Lỗi";
+        }
+    }
+
+    function formatMoney(value) {
+        return Number(value).toLocaleString("vi-VN") + " VND";
+    }
+
+    // gọi khi load trang
+    loadRevenue();
 </script>
 </body>
 </html>
