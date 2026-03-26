@@ -4,6 +4,8 @@ import com.module5.team2.dto.response.CouponResponse;
 import com.module5.team2.repository.CouponRepository;
 import com.module5.team2.service.service.CouponService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,10 +21,10 @@ public class CouponController {
     private final CouponService couponService;
 
     @GetMapping
-    public List<CouponResponse> getCouponsBySupplier(
+    public ResponseEntity<List<CouponResponse>> getCouponsBySupplier(
             @RequestParam Long supplierId
     ) {
-        return couponService.getCouponsBySupplierId(supplierId);
+        return ResponseEntity.ok(couponService.getCouponsBySupplierId(supplierId));
     }
 
 }

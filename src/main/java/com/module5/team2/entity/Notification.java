@@ -1,11 +1,6 @@
 package com.module5.team2.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.*;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,4 +45,7 @@ public class Notification {
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;// thêm orderId
+    @ManyToOne
+    @JoinColumn(name = "review_id")
+    private ReviewEntity review;// thêm orderId
 }

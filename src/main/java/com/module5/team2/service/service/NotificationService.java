@@ -2,6 +2,7 @@ package com.module5.team2.service.service;
 
 import com.module5.team2.dto.response.NotificationResponse;
 import com.module5.team2.entity.Order;
+import com.module5.team2.entity.ReviewEntity;
 import com.module5.team2.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,13 @@ public interface NotificationService {
             String content,
             String type,
             Order order
+    );
+    void createReviewNotify(
+            UserEntity user,
+            String title,
+            String content,
+            String type,
+            ReviewEntity review
     );
 
     Page<NotificationResponse> getUserNotifications(

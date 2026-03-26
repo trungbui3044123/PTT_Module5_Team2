@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.module5.team2.dto.request.OrderRequest;
+import com.module5.team2.dto.response.ApiResponse;
+import com.module5.team2.dto.response.OrderItemResponse;
+import com.module5.team2.dto.response.OrderResponse;
+import com.module5.team2.dto.response.ProductResponse;
 import com.module5.team2.entity.Order;
 import com.module5.team2.exception.BusinessException;
 import com.module5.team2.security.jwt.CustomUserDetails;
@@ -97,15 +101,12 @@ public class OrderController {
             @RequestBody OrderRequest request
     ) {
 
-        Order order = orderService.createOrder(customerId, request);
+        Order orders =  orderService.createOrder(customerId, request);
 
         // Convert sang DTO để tránh trả về entity thô
-//        List<OrderResponse> response = orders.stream()
-//                .map(this::toResponse)
-//                .collect(Collectors.toList());
+         OrderResponse response = toResponse(orders);                                     
 
-//        return ResponseEntity.ok(response);
-        return ResponseEntity.ok(toResponse(order));
+        return ResponseEntity.ok(response);
     }
 
         private OrderResponse toResponse(Order order) {
