@@ -22,4 +22,6 @@ public class ViolationResponse {
     private String status;
 
     private LocalDateTime createdAt;
+
+    private String customerEmail;
 }

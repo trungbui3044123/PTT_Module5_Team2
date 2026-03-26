@@ -1,10 +1,12 @@
 package com.module5.team2.controllers;
 
+import com.module5.team2.dto.request.SendMailRequest;
 import com.module5.team2.dto.request.ViolationRequest;
 import com.module5.team2.dto.response.ApiResponse;
 import com.module5.team2.dto.response.UserProfileResponse;
 import com.module5.team2.dto.response.ViolationResponse;
 import com.module5.team2.entity.UserEntity;
+import com.module5.team2.service.MailService;
 import com.module5.team2.service.service.StaffViolationService;
 import com.module5.team2.service.service.UserService;
 import jakarta.validation.Valid;
@@ -23,6 +25,7 @@ public class StaffViolationController {
 
     private final StaffViolationService violationService;
     private final UserService userService;
+    private final MailService mailService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createViolation(
@@ -103,6 +106,27 @@ public class StaffViolationController {
                         .status(200)
                         .message("Lấy danh sách vi phạm thành công")
                         .data(result)
+                        .build()
+        );
+    }
+
+//    Gửi email
+    @PostMapping("/send-mail")
+    @PreAuthorize("hasRole('STAFF')")
+    public ResponseEntity<ApiResponse<?>> sendMail(
+            @Valid @RequestBody SendMailRequest request
+    ) {
+
+        mailService.send(
+                request.getTo(),
+                request.getSubject(),
+                request.getContent()
+        );
+
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(200)
+                        .message("Gửi mail thành công")
                         .build()
         );
     }
