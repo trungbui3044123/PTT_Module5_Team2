@@ -85,7 +85,7 @@ async function handleNotificationClick(notificationId, orderId) {
             updateBadgeCount(-1);
 
             // Điều hướng sang order
-            window.location.href = `orderManagement.html?id=${orderId}`;
+            // window.location.href = `orderManagement.html?id=${orderId}`;
         }
 
     } catch (error) {

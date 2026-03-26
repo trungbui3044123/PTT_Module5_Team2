@@ -29,9 +29,6 @@
                     <a href="./violation-list.html" class="nav-link text-white active">Violation List</a>
                 </li>
 
-                <li class="nav-item mb-2">
-                    <a href="./send-mail.html" class="nav-link text-white">Send Mail</a>
-                </li>
 
                 <li class="nav-item mt-3">
                     <a href="../../Login.html" class="btn btn-danger w-100">Logout</a>
@@ -186,7 +183,7 @@
                         <td>${formatDate(v.createdAt)}</td>
                         <td>
                 <button class="btn btn-sm btn-primary"
-                    onclick="openMailModal('${v.customerEmail || ""}')">
+                    onclick="openMailModal('${v.customerEmail || ""}', '${v.supplierEmail || ""}')">
                     Gửi
                 </button>
             </td>
@@ -239,8 +236,23 @@
         }
     }
 
-    function openMailModal(email) {
-        document.getElementById("mailTo").value = email;
+    // function openMailModal(email) {
+    //     document.getElementById("mailTo").value = email;
+    //     document.getElementById("mailSubject").value = "";
+    //     document.getElementById("mailContent").value = "";
+    //
+    //     const modal = new bootstrap.Modal(document.getElementById("mailModal"));
+    //     modal.show();
+    // }
+
+    function openMailModal(customerEmail, supplierEmail) {
+        const emails = [];
+
+        if (customerEmail) emails.push(customerEmail);
+        if (supplierEmail) emails.push(supplierEmail);
+
+        document.getElementById("mailTo").value = JSON.stringify(emails);
+
         document.getElementById("mailSubject").value = "";
         document.getElementById("mailContent").value = "";
 
@@ -249,7 +261,7 @@
     }
 
     async function sendMail() {
-        const to = document.getElementById("mailTo").value;
+        const to = JSON.parse(document.getElementById("mailTo").value);
         const subject = document.getElementById("mailSubject").value;
         const content = document.getElementById("mailContent").value;
 
