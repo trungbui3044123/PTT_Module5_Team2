@@ -3,6 +3,7 @@ package com.module5.team2.controllers;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.module5.team2.dto.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +38,24 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class OrderController {
 
         private final OrderService orderService;
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<OrderResponse> getOrderDetail(
+            @PathVariable Long orderId,
+            Authentication authentication
+    ) {
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+
+        // Lấy order
+        Order order = orderService.getOrder(orderId);
+
+        // Check quyền
+        if (!order.getCustomer().getId().equals(userDetails.getId())) {
+            throw new BusinessException("Bạn không có quyền xem đơn hàng này");
+        }
+
+        return ResponseEntity.ok(toResponse(order));
+    }
 
         @GetMapping("/customer/{id}")
         public ResponseEntity<ApiResponse<Page<OrderResponse>>> getMethodName(
@@ -97,18 +116,23 @@ public class OrderController {
                                 .receiverName(order.getReceiverName())
                                 .receiverPhone(order.getReceiverPhone())
                                 .receiverAddress(order.getReceiverAddress())
+
                                 .totalAmount(order.getTotalAmount())
                                 .createdAt(order.getCreatedAt())
+                                .coupon(order.getCoupon() != null ? CouponResponse.builder()
+                                        .id(order.getCoupon().getId())
+                                        .code(order.getCoupon().getCode())
+                                        .value(order.getCoupon().getValue())
+                                        .build() : null)
                                 .items(
                                                 order.getItems().stream()
                                                                 .map(item -> OrderItemResponse.builder()
-                                                                                .productId(Integer.valueOf(item
-                                                                                                .getProduct().getId()))
-                                                                                .productName(item.getProduct()
-                                                                                                .getName())
+                                                                                .productId(item.getProduct().getId())
+                                                                                .productName(item.getProduct().getName())
                                                                                 .quantity(item.getQuantity())
                                                                                 .unitPrice(item.getUnitPrice())
                                                                                 .subtotal(item.getSubtotal())
+                                                                                .productImageUrl(item.getProduct().getImages().getFirst().getImageUrl())
                                                                                 .build())
                                                                 .collect(Collectors.toList()))
                                 .build();

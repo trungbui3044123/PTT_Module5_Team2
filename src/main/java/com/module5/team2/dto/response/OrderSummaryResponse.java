@@ -15,6 +15,7 @@ public class OrderSummaryResponse {
     private String receiverName;
     private String receiverPhone;
     private String receiverAddress;
+    private CouponResponse coupon;
     private BigDecimal totalAmount;
     private LocalDateTime createdAt;
 }

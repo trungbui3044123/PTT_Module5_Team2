@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Staff Violations</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- ===== SIDEBAR (GIỐNG INDEX) ===== -->
+        <div class="col-md-3 col-lg-2 bg-dark text-white min-vh-100 p-3">
+            <h2 class="text-center mb-4">Admin Panel</h2>
+
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a href="./index.html" class="nav-link text-white">Dashboard</a>
+                </li>
+
+                <li class="nav-item mb-2">
+                    <a href="./userList.html" class="nav-link text-white">List Users</a>
+                </li>
+
+                <li class="nav-item mb-2">
+                    <a href="./note_staff_list.html" class="nav-link text-white active">
+                        Staff Violations
+                    </a>
+                </li>
+
+                <li class="nav-item mb-2">
+                    <a href="./revenue.html" class="nav-link text-white">Revenue</a>
+                </li>
+
+                <li class="nav-item mt-3">
+                    <a href="../../Login.html" class="btn btn-danger w-100">Logout</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- ===== CONTENT ===== -->
+        <div class="col-md-9 col-lg-10 p-4">
+
+            <!-- Username -->
+            <div class="d-flex justify-content-end mb-3">
+                <p class="fw-semibold text-secondary" id="username"></p>
+            </div>
+
+            <h3 class="mb-4">Danh sách nhân viên</h3>
+
+            <div class="card shadow p-3">
+
+                <table class="table table-bordered text-center">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>Tên nhân viên</th>
+                        <th>Hành động</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="staffTable">
+                    <tr><td colspan="2">Loading...</td></tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal fade" id="violationModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Vi phạm của: <span id="staffName"></span>
+                </h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <table class="table table-bordered text-center">
+                    <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer</th>
+                        <th>Supplier</th>
+                        <th>Nội dung</th>
+                        <th>Status</th>
+                        <th>Ngày tạo</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="violationTable">
+                    <tr><td colspan="6">Loading...</td></tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    const API = "http://localhost:8080/api/admin/violations";
+    const token = sessionStorage.getItem("token");
+    const username = sessionStorage.getItem("username");
+    const role = sessionStorage.getItem("role");
+
+    if (!token || role !== "ADMIN") {
+        window.location.href = "../../Login.html";
+    }
+
+    document.getElementById("username").innerText = "Xin chào, " + username;
+
+    // ===== LOAD STAFF =====
+    async function loadStaffs() {
+        const tbody = document.getElementById("staffTable");
+
+        try {
+            const res = await fetch(`${API}/staffs`, {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            const data = await res.json();
+            const staffs = data.data;
+
+            tbody.innerHTML = "";
+
+            if (!staffs || staffs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2">Không có staff</td></tr>`;
+                return;
+            }
+
+            staffs.forEach(s => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${s.username}</td>
+                        <td>
+                            <button class="btn btn-primary"
+                                onclick="viewDetail(${s.id}, '${s.username}')">
+                                Xem chi tiết
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = `<tr><td colspan="2">Lỗi tải dữ liệu</td></tr>`;
+        }
+    }
+
+    // ===== VIEW DETAIL =====
+    async function viewDetail(staffId, staffName) {
+
+        document.getElementById("staffName").innerText = staffName;
+
+        const tbody = document.getElementById("violationTable");
+        tbody.innerHTML = `<tr><td colspan="6">Loading...</td></tr>`;
+
+        const modal = new bootstrap.Modal(document.getElementById("violationModal"));
+        modal.show();
+
+        try {
+            const res = await fetch(`${API}/staff/${staffId}`, {
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            const data = await res.json();
+            const list = data.data;
+
+            tbody.innerHTML = "";
+
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6">Không có vi phạm</td></tr>`;
+                return;
+            }
+
+            list.forEach(v => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${v.id}</td>
+                        <td>${v.customerName || "-"}</td>
+                        <td>${v.supplierName || "-"}</td>
+                        <td>${v.violation}</td>
+                        <td>${renderStatus(v.status)}</td>
+                        <td>${formatDate(v.createdAt)}</td>
+                    </tr>
+                `;
+            });
+
+        } catch (err) {
+            console.error(err);
+            tbody.innerHTML = `<tr><td colspan="6">Lỗi tải dữ liệu</td></tr>`;
+        }
+    }
+
+    // ===== UTIL =====
+    function renderStatus(status) {
+        if (status === "HIGH") return `<span class="badge bg-danger">HIGH</span>`;
+        if (status === "MEDIUM") return `<span class="badge bg-warning text-dark">MEDIUM</span>`;
+        return `<span class="badge bg-success">LOW</span>`;
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return "-";
+        return new Date(dateStr).toLocaleString("vi-VN");
+    }
+
+    loadStaffs();
+</script>
+
+</body>
+</html>

@@ -1,6 +1,7 @@
 package com.module5.team2.service.serviceImpl;
 
 import com.module5.team2.dto.request.OrderRequest;
+import com.module5.team2.dto.response.CouponResponse;
 import com.module5.team2.dto.response.OrderItemResponse;
 import com.module5.team2.dto.response.OrderResponse;
 import com.module5.team2.dto.response.OrderSummaryResponse;
@@ -15,7 +16,9 @@ import com.module5.team2.service.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +42,7 @@ public class OrderServiceImpl implements OrderService {
     private void restoreCoupon(Order order) {
         Coupon coupon = order.getCoupon(); // bạn cần lưu coupon vào order
 
-        if (coupon != null) {
+        if (coupon != null && coupon.getUsedCount() > 0) {
             coupon.setUsedCount(coupon.getUsedCount() - 1);
         }
     }
@@ -62,6 +65,7 @@ public class OrderServiceImpl implements OrderService {
                         .receiverName(order.getReceiverName())
                         .receiverPhone(order.getReceiverPhone())
                         .receiverAddress(order.getReceiverAddress())
+                        .coupon(order.getCoupon() != null ? mapCoupon(order.getCoupon()) : null)
                         .totalAmount(order.getTotalAmount())
                         .createdAt(order.getCreatedAt())
                         .build()
@@ -83,16 +87,18 @@ public class OrderServiceImpl implements OrderService {
                 .receiverName(order.getReceiverName())
                 .receiverPhone(order.getReceiverPhone())
                 .receiverAddress(order.getReceiverAddress())
+                .coupon(order.getCoupon() != null ? mapCoupon(order.getCoupon()) : null)
                 .totalAmount(order.getTotalAmount())
                 .rejectReason(order.getRejectReason())
                 .createdAt(order.getCreatedAt())
                 .items(order.getItems().stream()
                         .map(item -> OrderItemResponse.builder()
-                                .productId(Integer.valueOf(item.getProduct().getId()))
+                                .productId(item.getProduct().getId())
                                 .productName(item.getProduct().getName())
                                 .quantity(item.getQuantity())
                                 .unitPrice(item.getUnitPrice())
                                 .subtotal(item.getSubtotal())
+                                .productImageUrl(item.getProduct().getImages().getFirst().getImageUrl())
                                 .build())
                         .collect(Collectors.toList()))
                 .build();
@@ -430,6 +436,7 @@ public Order createOrder (Integer customerId, OrderRequest request) {
                                 .receiverName(order.getReceiverName())
                                 .receiverPhone(order.getReceiverPhone())
                                 .receiverAddress(order.getReceiverAddress())
+                                .coupon(order.getCoupon() != null ? mapCoupon(order.getCoupon()) : null)
                                 .totalAmount(order.getTotalAmount())
                                 .rejectReason(order.getRejectReason())
                                 .createdAt(order.getCreatedAt())
@@ -441,12 +448,29 @@ public Order createOrder (Integer customerId, OrderRequest request) {
                                         .quantity(item.getQuantity())
                                         .unitPrice(item.getUnitPrice())
                                         .subtotal(item.getSubtotal())
+                                        .productImageUrl(item.getProduct().getImages().getFirst().getImageUrl())
                                         .build()
                             )
                             .toList()
                         )
                                 .build()
                             );
+    }
+
+    private CouponResponse mapCoupon(Coupon c) {
+        if (c == null) return null;
+
+        return CouponResponse.builder()
+                .id(c.getId())
+                .code(c.getCode())
+                .value(c.getValue())
+                .minOrderValue(c.getMinOrderValue())
+                .usageLimit(c.getUsageLimit())
+                .usedCount(c.getUsedCount())
+                .isActive(c.getIsActive())
+                .expiresAt(c.getExpiresAt())
+                .createdAt(c.getCreatedAt())
+                .build();
     }
 
 

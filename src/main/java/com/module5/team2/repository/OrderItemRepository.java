@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
-     @Query(value = """
+    @Query(value = """
     SELECT 
         oi.product_id,
         p.name AS product_name,
@@ -40,4 +40,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
     LIMIT 5
 """, nativeQuery = true)
 List<Object[]> findTop5BestSellingProducts(@Param("supplierId") Long supplierId);
+
+//    boolean existsByCouponCode(String couponCode);
 }
