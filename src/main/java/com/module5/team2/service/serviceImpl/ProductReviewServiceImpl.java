@@ -62,4 +62,34 @@ public class ProductReviewServiceImpl implements ProductReviewService {
         
     }
 
+    @Override
+    public List<ReviewEntity> getReviewsBySupplier(Integer supplierId) {
+        return reviewRepository.findBySupplierId(supplierId);
+    }
+
+    @Override
+    public void respondReview(Long reviewId, Integer supplierId, String response) {
+
+        ReviewEntity review = reviewRepository
+                .findByIdAndSupplierId(reviewId, supplierId)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy review hoặc không có quyền"));
+
+        if (review.getSupplierResponse() != null &&
+                !review.getSupplierResponse().trim().isEmpty()) {
+            throw new BusinessException("Review này đã được phản hồi rồi");
+        }
+
+        review.setSupplierResponse(response);
+        reviewRepository.save(review);
+
+        // Optional: gửi thông báo cho user
+        notifiService.createReviewNotify(
+                review.getUser(),
+                response,
+                "Shop đã phản hồi đánh giá của bạn",
+                "REPLY_REVIEW",
+                review
+        );
+    }
+
 }

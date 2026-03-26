@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Supplier - Review Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+
+    <style>
+        .star {
+            color: gold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+
+        <!-- SIDEBAR -->
+        <div class="col-md-3 col-lg-2 bg-dark text-white min-vh-100 p-3">
+            <h2 class="text-center mb-4">Supplier Panel</h2>
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <a href="index.html" class="nav-link text-white">Dashboard</a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="productManagement.html" class="nav-link text-white">
+                        Product Management
+                    </a>
+                </li>
+                <li class="nav-item mb-2">
+                    <a href="orderManagement.html" class="nav-link text-white">
+                        Order Management
+                    </a>
+                </li>
+
+                <li class="nav-item mb-2">
+                    <a href="couponManagement.html" class="nav-link text-white">Coupon Management</a>
+                </li>
+
+                <li class="nav-item mb-2">
+                    <a href="reviewManagement.html" class="nav-link text-white active">
+                        Review Management
+                    </a>
+                </li>
+                <li class="nav-item mt-3">
+                    <a href="../../Login.html"
+                       class="btn btn-danger w-100">Logout</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="col-md-9 col-lg-10 p-4">
+
+            <div class="d-flex justify-content-end mb-3">
+                <!-- Notification Bell -->
+                <div class="dropdown">
+                    <button class="btn position-relative" id="notificationBtn"
+                            data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-bell fs-5"></i>
+                        <span id="notificationBadge"
+                              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                              style="display: none;">
+            </span>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-menu-end shadow"
+                        style="width: 320px; max-height: 400px; overflow-y: auto;"
+                        id="notificationList">
+                        <li class="dropdown-header fw-bold">Thông báo</li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li class="text-center text-muted py-2">Không có thông báo</li>
+                    </ul>
+                </div>
+                <p class="fw-semibold text-secondary mb-0" id="usernameDisplay"></p>
+            </div>
+
+            <h2 class="fw-bold mb-4">Quản lý đánh giá</h2>
+
+            <div class="card shadow-sm p-4">
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                        <tr>
+                            <th>Khách hàng</th>
+                            <th>Sản phẩm</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Phản hồi</th>
+                            <th>Thao tác</th>
+                        </tr>
+                        </thead>
+                        <tbody id="reviewBody"></tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL RESPONSE -->
+<div class="modal fade" id="responseModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Phản hồi đánh giá</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <textarea id="responseText"
+                          class="form-control"
+                          rows="4"
+                          placeholder="Nhập phản hồi..."></textarea>
+
+                <div class="text-danger mt-2" id="responseError"></div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary"
+                        data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-primary"
+                        id="btnSendResponse">
+                    Gửi
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- JS -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="../../public/assets/notification.js"></script>
+
+<script>
+    const supplierId = sessionStorage.getItem("id");
+    const token = sessionStorage.getItem("token");
+    const username = sessionStorage.getItem("username");
+    const role = sessionStorage.getItem("role");
+
+    if (!token || role !== "SUPPLIER") {
+        window.location.href = "../../Login.html";
+    }
+
+    document.getElementById("usernameDisplay").innerText = `Xin chào, ${username}`;
+
+    const API_URL = "http://localhost:8080/api/supplier/reviews";
+
+    let currentReviewId = null;
+
+    function loadReviews() {
+        $.ajax({
+            url: API_URL + "?supplierId=" + supplierId,
+            method: "GET",
+            headers: { Authorization: "Bearer " + token },
+
+            success: function (res) {
+                renderReviews(res.data);
+            },
+
+            error: function () {
+                toastr.error("Lỗi tải review");
+            }
+        });
+    }
+
+    function renderStars(rating) {
+        let html = "";
+        for (let i = 1; i <= 5; i++) {
+            html += `<i class="fa fa-star ${i <= rating ? 'star' : ''}"></i>`;
+        }
+        return html;
+    }
+
+    function renderReviews(reviews) {
+
+        let html = "";
+
+        if (!reviews || reviews.length === 0) {
+            html = `<tr><td colspan="6" class="text-center">Không có đánh giá</td></tr>`;
+        } else {
+
+            reviews.forEach(r => {
+
+                html += `
+                <tr>
+                    <td>${r.user?.username || "-"}</td>
+                    <td>${r.product?.name || "-"}</td>
+
+                    <td>${renderStars(r.rating)}</td>
+
+                    <td>${r.comment || "-"}</td>
+
+                    <td>
+                        ${
+                    r.supplierResponse
+                        ? `<span class="text-success">${r.supplierResponse}</span>`
+                        : `<span class="text-muted">Chưa phản hồi</span>`
+                }
+                    </td>
+
+                    <td>
+                        ${
+                    !r.supplierResponse
+                        ? `<button class="btn btn-sm btn-primary"
+                                    onclick="openResponse(${r.id})">
+                                    Phản hồi
+                                   </button>`
+                        : ""
+                }
+                    </td>
+                </tr>
+                `;
+            });
+        }
+
+        $("#reviewBody").html(html);
+    }
+
+    function openResponse(id) {
+        currentReviewId = id;
+        $("#responseText").val("");
+        $("#responseError").text("");
+        new bootstrap.Modal("#responseModal").show();
+    }
+
+    $("#btnSendResponse").click(function () {
+
+        const text = $("#responseText").val().trim();
+
+        if (!text) {
+            $("#responseError").text("Vui lòng nhập phản hồi");
+            return;
+        }
+
+        $.ajax({
+            url: API_URL + "/" + currentReviewId + "/response?supplierId=" + supplierId,
+            method: "PUT",
+            contentType: "application/json",
+            headers: { Authorization: "Bearer " + token },
+            data: JSON.stringify({ response: text }),
+
+            success: function () {
+                toastr.success("Phản hồi thành công");
+                bootstrap.Modal.getInstance(
+                    document.getElementById("responseModal")
+                ).hide();
+                loadReviews();
+            },
+
+            error: function (xhr) {
+                toastr.error(xhr.responseJSON?.message || "Lỗi");
+            }
+        });
+    });
+
+    loadReviews();
+</script>
+
+</body>
+</html>

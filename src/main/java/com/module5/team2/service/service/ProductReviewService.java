@@ -9,4 +9,6 @@ public interface ProductReviewService {
     List<ReviewEntity> getReviewsByProduct(Integer productId);
     void createReview(Integer productId, Integer userId, ReviewRequest request);
 
+    List<ReviewEntity> getReviewsBySupplier(Integer supplierId);
+    void respondReview(Long reviewId, Integer supplierId, String response);
 }
