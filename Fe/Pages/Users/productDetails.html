@@ -681,6 +681,7 @@ const cartInfo = JSON.parse(raw);
               return;
             }
             console.log(res);
+
             // Lặp qua từng review
             res.data.forEach((r) => {
               const div = document.createElement("div");
@@ -689,8 +690,19 @@ const cartInfo = JSON.parse(raw);
               div.innerHTML = `
         <div class="fw-bold text-warning">⭐ ${r.rating}</div>
         <div>${r.comment || "(Không có nhận xét)"}</div>
-        <small class="text-muted">Ngày: ${r.createdAt}</small><br>
-        <small class="text-muted">Người đánh giá: ${r.user.name}</small>
+        <small class="text-muted">Ngày: ${new Date(r.createdAt).toLocaleString("vi-VN")}</small><br>
+        <small class="text-muted">Người đánh giá: ${r.user.name || "Ẩn danh"}</small>
+
+        ${r.supplierResponse
+                      ? `<div class="mt-2 p-2 bg-light border rounded">
+                            <strong>Phản hồi từ shop:</strong>
+                            <div class="text-success">
+                                ${r.supplierResponse}
+                            </div>
+                        </div>
+                        `
+                      : ""
+              }
       `;
 
               container.appendChild(div);
