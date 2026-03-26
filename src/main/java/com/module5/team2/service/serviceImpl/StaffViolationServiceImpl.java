@@ -75,6 +75,16 @@ public class StaffViolationServiceImpl implements StaffViolationService {
                 .violation(note.getViolation())
                 .status(note.getStatus().name())
                 .createdAt(note.getCreatedAt())
+                .customerEmail(
+                        note.getCustomer() != null
+                                ? note.getCustomer().getEmail()
+                                : null
+                )
+                .supplierEmail(
+                        note.getSupplier() != null
+                                ? note.getSupplier().getEmail()
+                                : null
+                )
                 .build()
         );
     }
@@ -116,6 +126,16 @@ public class StaffViolationServiceImpl implements StaffViolationService {
                 .violation(note.getViolation())
                 .status(note.getStatus().name())
                 .createdAt(note.getCreatedAt())
+                .customerEmail(
+                        note.getCustomer() != null
+                                ? note.getCustomer().getEmail()
+                                : null
+                )
+                .supplierEmail(
+                        note.getSupplier() != null
+                                ? note.getSupplier().getEmail()
+                                : null
+                )
                 .build()
         );
     }

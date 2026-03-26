@@ -29,9 +29,6 @@
                     <a href="./violation-list.html" class="nav-link text-white active">Violation List</a>
                 </li>
 
-                <li class="nav-item mb-2">
-                    <a href="./send-mail.html" class="nav-link text-white">Send Mail</a>
-                </li>
 
                 <li class="nav-item mt-3">
                     <a href="../../Login.html" class="btn btn-danger w-100">Logout</a>
@@ -73,6 +70,7 @@
                         <th>Nội dung</th>
                         <th>Status</th>
                         <th>Ngày tạo</th>
+                        <th>Gửi mail</th>
                     </tr>
                     </thead>
 
@@ -93,6 +91,40 @@
     </div>
 </div>
 
+<!-- Modal gửi mail -->
+<div class="modal fade" id="mailModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Gửi Email cảnh báo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="mailTo">
+
+                <div class="mb-3">
+                    <label>Chủ đề</label>
+                    <input type="text" id="mailSubject" class="form-control">
+                </div>
+
+                <div class="mb-3">
+                    <label>Nội dung</label>
+                    <textarea id="mailContent" class="form-control"></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-success" onclick="sendMail()">Gửi</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     const API = "http://localhost:8080";
     const token = sessionStorage.getItem("token");
@@ -149,6 +181,12 @@
                         <td>${v.violation}</td>
                         <td>${renderStatus(v.status)}</td>
                         <td>${formatDate(v.createdAt)}</td>
+                        <td>
+                <button class="btn btn-sm btn-primary"
+                    onclick="openMailModal('${v.customerEmail || ""}', '${v.supplierEmail || ""}')">
+                    Gửi
+                </button>
+            </td>
                     </tr>
                 `;
             });
@@ -195,6 +233,60 @@
         if (page > 0) {
             page--;
             loadViolations();
+        }
+    }
+
+    // function openMailModal(email) {
+    //     document.getElementById("mailTo").value = email;
+    //     document.getElementById("mailSubject").value = "";
+    //     document.getElementById("mailContent").value = "";
+    //
+    //     const modal = new bootstrap.Modal(document.getElementById("mailModal"));
+    //     modal.show();
+    // }
+
+    function openMailModal(customerEmail, supplierEmail) {
+        const emails = [];
+
+        if (customerEmail) emails.push(customerEmail);
+        if (supplierEmail) emails.push(supplierEmail);
+
+        document.getElementById("mailTo").value = JSON.stringify(emails);
+
+        document.getElementById("mailSubject").value = "";
+        document.getElementById("mailContent").value = "";
+
+        const modal = new bootstrap.Modal(document.getElementById("mailModal"));
+        modal.show();
+    }
+
+    async function sendMail() {
+        const to = JSON.parse(document.getElementById("mailTo").value);
+        const subject = document.getElementById("mailSubject").value;
+        const content = document.getElementById("mailContent").value;
+
+        try {
+            const res = await fetch(`${API}/api/staff/violations/send-mail`, {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + token,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ to, subject, content })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("Gửi mail thành công");
+                bootstrap.Modal.getInstance(document.getElementById("mailModal")).hide();
+            } else {
+                alert(data.message);
+            }
+
+        } catch (e) {
+            console.error(e);
+            alert("Lỗi gửi mail");
         }
     }
 

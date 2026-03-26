@@ -23,7 +23,7 @@
 
                 <ul class="nav flex-column">
                     <li class="nav-item mb-2">
-                        <a href="#" class="nav-link text-white">Dashboard</a>
+                        <a href="./index.html" class="nav-link text-white">Dashboard</a>
                     </li>
 
                     <li class="nav-item mb-2">
@@ -38,15 +38,6 @@
                         </a>
                     </li>
 
-                    <li class="nav-item mb-2">
-                        <a href="./send-mail.html" class="nav-link text-white">
-                            Send Warning Mail
-                        </a>
-                    </li>
-
-                    <li class="nav-item mb-2">
-                        <a href="./revenue.html" class="nav-link text-white">Revenue</a>
-                    </li>
 
                     <li class="nav-item mt-3">
                         <a href="../../Login.html" class="btn btn-danger w-100">Logout</a>
@@ -192,7 +183,7 @@
 
             const result = await res.json();
 
-            if (result.status === 201) {
+            if (result.status === 200) {
                 alert("Tạo violation thành công");
                 location.reload();
             } else {

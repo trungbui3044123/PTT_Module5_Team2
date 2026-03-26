@@ -348,6 +348,14 @@ public Order createOrder (Integer customerId, OrderRequest request) {
         // ================= REMOVE ITEM ĐÃ MUA =================
         cart.getItems().removeAll(selectedItems);
 
+        // Tạo thông báo cho supplier
+        notificationService.createNotification(
+                supplier,
+                "Có đơn hàng mới",
+                "Bạn có đơn hàng #" + savedOrder.getId() + " từ khách " + customer.getName(),
+                "ORDER_NEW",
+                savedOrder
+        );
         return savedOrder;
 
 
