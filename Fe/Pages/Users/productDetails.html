@@ -348,9 +348,10 @@
       const role = sessionStorage.getItem("role");
       const userId = sessionStorage.getItem("id");
       if (token) {
-        login.setAttribute("href", "./Profile.html");
+        login.setAttribute("href", "./Pages/Users/Profile.html");
         textLogin.innerText = "Log out";
         textUserName.innerText = "Xin chào " + username;
+        profile.setAttribute("href","./Profile.html")
       }
 
       // show list suppliers
